@@ -22,6 +22,7 @@ namespace Intocast_Plynomer_App
     {
         public MainWindow()
         {
+            Console.WriteLine("Hello World!");
             InitializeComponent();
         }
     }
