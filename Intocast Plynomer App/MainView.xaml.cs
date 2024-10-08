@@ -17,26 +17,22 @@ using System.Windows.Shapes;
 namespace Intocast_Plynomer_App
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for MainView.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainView : UserControl
     {
         private ApiService api;
-        public MainWindow()
+        public MainView()
         {
-            Console.WriteLine("Hello World!");
             this.api = ApiService.GetInstance();
 
-
             InitializeComponent();
-            MainContentControl.Content = new LoginView();
         }
 
-        public void NavigateToMainApp()
+        public void CallApi(object sender, RoutedEventArgs e)
         {
-            // Load the main application screen
-            MainContentControl.Content = new MainView();
+            string test = this.api.Test();
+            Console.WriteLine(test);
         }
-
     }
 }
