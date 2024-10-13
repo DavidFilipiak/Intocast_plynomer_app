@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Intocast_Plynomer_App.models
+namespace IntocastGasMeterApp.models
 {
     internal class GasMeasurement
     {

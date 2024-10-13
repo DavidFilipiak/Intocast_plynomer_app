@@ -1,7 +1,7 @@
-﻿<Application x:Class="Intocast_Plynomer_App.App"
+﻿<Application x:Class="IntocastGasMeterApp.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:Intocast_Plynomer_App"
+             xmlns:local="clr-namespace:IntocastGasMeterApp"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
          

@@ -1,0 +1,42 @@
+﻿<Window x:Class="IntocastGasMeterApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:IntocastGasMeterApp"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+        <DockPanel Margin="0">
+            <Menu DockPanel.Dock="Top">
+                <MenuItem Header="Account" Height="30">
+                    <MenuItem Header="Details"></MenuItem>
+                    <MenuItem Header="Change Email"></MenuItem>
+                    <MenuItem Header="Change Phone Number"></MenuItem>
+                    <Separator></Separator>
+                    <MenuItem Header="Sign out"></MenuItem>
+                </MenuItem>
+                <MenuItem Header="Api test" Click="CallApi"></MenuItem>
+                <MenuItem Header="Nastavenia">
+                    <MenuItem Header="Language"></MenuItem>
+                    <MenuItem Header="Run on startup"></MenuItem>
+                </MenuItem>
+            </Menu>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*"></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Rectangle Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Stroke="Black"/>
+                <GroupBox Header="Spotreba" Grid.Column="1" Grid.Row="0"/>
+                <GroupBox Header="Plynomer" Grid.Column="2" Grid.Row="0"/>
+                <GroupBox Header="Prietok" Grid.Column="1" Grid.Row="1"/>
+                <GroupBox Header="Teplota" Grid.Column="2" Grid.Row="1"/>
+            </Grid>
+        </DockPanel>
+</Window>

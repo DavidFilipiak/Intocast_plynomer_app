@@ -6,13 +6,17 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
+using Newtonsoft.Json;
 
-namespace Intocast_Plynomer_App.services
+namespace IntocastGasMeterApp.services
 {
     internal class ApiService
     {
+        private const string SPP_API_URL = "https://gasapi.spp-distribucia.sk/Website/sppdapi/";
+        public string sessionId { get; set; } = "";
+
         private HttpClient client;
-        private static ApiService instance;
+        private static ApiService instance = null;
         private ApiService()
         {
             this.client = new HttpClient();
@@ -48,8 +52,20 @@ namespace Intocast_Plynomer_App.services
 
         public string Login(string username, string password)
         {
-            // session Id
-            return "";
+            var jsonBody = JsonConvert.SerializeObject(new { username = username, password = password });
+            HttpContent content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+            HttpResponseMessage response = this.client.PostAsync("logon.rails", content).Result;
+            if (response.IsSuccessStatusCode)
+            {
+                string responseString = response.Content.ReadAsStringAsync().Result;
+                dynamic responseJson = JsonConvert.DeserializeObject(responseString);
+                this.sessionId = responseJson.sessionId;
+                return this.sessionId;
+            }
+            else
+            {
+                return "Error";
+            }
         }
     }
 }
