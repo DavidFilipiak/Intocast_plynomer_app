@@ -12,6 +12,11 @@ using System.Windows.Shapes;
 using IntocastGasMeterApp.services;
 using IntocastGasMeterApp.models;
 using Newtonsoft.Json;
+using System.Windows.Markup;
+using LiveChartsCore.SkiaSharpView.Painting;
+using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore;
+using SkiaSharp;
 
 
 namespace IntocastGasMeterApp
@@ -35,6 +40,11 @@ namespace IntocastGasMeterApp
         {
             string test = this.api.Test();
             Console.WriteLine(test);
+        }
+
+        public void AddColumn(object sender, RoutedEventArgs e)
+        {
+            barChart.addColumn(10);
         }
 
         public void LoadAppSettings()

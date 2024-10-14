@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:IntocastGasMeterApp"
+        xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
         <DockPanel Margin="0">
@@ -20,6 +21,7 @@
                     <MenuItem Header="Language"></MenuItem>
                     <MenuItem Header="Run on startup"></MenuItem>
                 </MenuItem>
+                <MenuItem Header="stlpec" Click="AddColumn"></MenuItem>
             </Menu>
 
             <Grid>
@@ -32,7 +34,9 @@
                     <RowDefinition></RowDefinition>
                     <RowDefinition></RowDefinition>
                 </Grid.RowDefinitions>
-                <Rectangle Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Stroke="Black"/>
+
+                <local:BarChartControl Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" x:Name="barChart"></local:BarChartControl>
+
                 <GroupBox Header="Spotreba" Grid.Column="1" Grid.Row="0"/>
                 <GroupBox Header="Plynomer" Grid.Column="2" Grid.Row="0"/>
                 <GroupBox Header="Prietok" Grid.Column="1" Grid.Row="1"/>
