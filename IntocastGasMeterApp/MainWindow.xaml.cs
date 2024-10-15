@@ -32,8 +32,6 @@ namespace IntocastGasMeterApp
             this.api = ApiService.GetInstance();
 
             InitializeComponent();
-
-            this.LoadAppSettings();
         }
 
         public void CallApi(object sender, RoutedEventArgs e)
@@ -45,43 +43,6 @@ namespace IntocastGasMeterApp
         public void AddColumn(object sender, RoutedEventArgs e)
         {
             barChart.addColumn(10);
-        }
-
-        public void LoadAppSettings()
-        {
-            // app data path
-            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-
-            string folderPath = System.IO.Path.Combine(appDataPath, "IntocastPlynomerApp");
-            if (!Directory.Exists(folderPath))
-            {
-                Directory.CreateDirectory(folderPath);
-            }
-
-            string filePath = System.IO.Path.Combine(folderPath, "settings.settings");
-            if (!File.Exists(filePath))
-            {
-                Settings newSettings = initSettings();
-                File.WriteAllText(filePath, JsonConvert.SerializeObject(newSettings));
-            }
-
-            // read the settings file as JSON
-            string settings = File.ReadAllText(filePath);
-
-            // parse the JSON and load the settings
-            Settings sessionData = JsonConvert.DeserializeObject<Settings>(settings);
-            this.api.sessionId = sessionData.sessionId;
-
-            if (!String.IsNullOrEmpty(sessionData.sessionId))
-            {
-                // navigate to the main app
-                
-            }
-        }
-
-        private Settings initSettings()
-        {
-            return new Settings();
         }
     }
 }
