@@ -9,8 +9,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using IntocastGasMeterApp.services;
-using IntocastGasMeterApp.models;
 using Newtonsoft.Json;
 using System.Windows.Markup;
 using LiveChartsCore.SkiaSharpView.Painting;
@@ -26,23 +24,22 @@ namespace IntocastGasMeterApp
     /// </summary>
     public partial class MainWindow : Window
     {
-        private ApiService api;
+        
         public MainWindow()
         {
-            this.api = ApiService.GetInstance();
-
             InitializeComponent();
+
+            this.navigateToMainPage();
         }
 
-        public void CallApi(object sender, RoutedEventArgs e)
+        public void navigateToMainPage()
         {
-            string test = this.api.Test();
-            Console.WriteLine(test);
+            MainFrame.Navigate(new MainPage());
         }
 
-        public void AddColumn(object sender, RoutedEventArgs e)
+        public void navigateToSettingsPage()
         {
-            barChart.addColumn(10);
+            MainFrame.Navigate(new SettingsPage());
         }
     }
 }
