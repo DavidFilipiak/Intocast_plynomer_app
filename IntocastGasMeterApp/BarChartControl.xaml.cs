@@ -32,6 +32,7 @@ namespace IntocastGasMeterApp
     {
         private List<double> actualValues = new List<double>();
         private readonly ObservableCollection<ObservableValue> _observableValues;
+        private readonly ObservableCollection<ObservablePoint> _recommendedLine;
 
         public BarChartControl()
         {
@@ -39,6 +40,8 @@ namespace IntocastGasMeterApp
             DataContext = this;
 
             _observableValues = new ObservableCollection<ObservableValue>();
+            _recommendedLine = new ObservableCollection<ObservablePoint>();
+            _recommendedLine.Add(new ObservablePoint(0, 0));
 
             Series = new ObservableCollection<ISeries>
             {
@@ -46,6 +49,13 @@ namespace IntocastGasMeterApp
                 {
                     Values = _observableValues,
 
+                },
+                new LineSeries<ObservablePoint>
+                {
+                    Values = _recommendedLine,
+                    GeometryFill = null,
+                    GeometryStroke = null,
+                    Fill = null
                 }
             };
 
@@ -66,12 +76,12 @@ namespace IntocastGasMeterApp
         {
             new Axis
             {
-                MaxLimit = 240,
+                //MaxLimit = 240,
                 MinLimit = 0,
             }
         };  
 
-[RelayCommand]
+        [RelayCommand]
         public void addColumn(double value)
         {
             double aggregatedValue = actualValues.Sum() + value;
@@ -81,6 +91,17 @@ namespace IntocastGasMeterApp
             Console.WriteLine(value);
             Console.WriteLine(actualValues.Count);
             Console.WriteLine(_observableValues.Count);
+        }
+
+        public void SetLine(double y)
+        {
+            int x = 24;
+            ObservablePoint NewPoint = new ObservablePoint(x, y);
+            if (_recommendedLine.Count > 1)
+            {
+                _recommendedLine.RemoveAt(1);
+            }
+            _recommendedLine.Add(NewPoint);
         }
     }
 }

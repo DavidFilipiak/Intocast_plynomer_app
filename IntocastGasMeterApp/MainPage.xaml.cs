@@ -31,6 +31,8 @@ namespace IntocastGasMeterApp
 
             InitializeComponent();
 
+            barChart.SetLine(Properties.Settings.Default.usage_agreed_max);
+
             ThroughputDiff = (Properties.Settings.Default.throughput_agreed - 1000).ToString();
             Label_ThroughputDiff.Content = ThroughputDiff;
         }
@@ -50,7 +52,8 @@ namespace IntocastGasMeterApp
 
         public void AddColumn(object sender, RoutedEventArgs e)
         {
-            barChart.addColumn(10);
+            double value = Properties.Settings.Default.usage_agreed_max / 24;
+            barChart.addColumn((int)value);
         }
     }
 }
