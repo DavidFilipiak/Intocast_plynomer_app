@@ -23,11 +23,89 @@ namespace IntocastGasMeterApp
         public SettingsPage()
         {
             InitializeComponent();
+            InitMeasureComboBox();
+            InitIntervalComboBox();
+        }
+
+        private void InitMeasureComboBox()
+        {
+            string selectedValue = Properties.Settings.Default.measure_start;
+            for (int i = 0; i < 24; i++)
+            {
+                ComboBoxItem item = new ComboBoxItem();
+                string content = i.ToString() + ":00";
+                if (content.Length == 4)
+                {
+                    content = "0" + content;
+                }
+                item.Content = content;
+
+                if (content == selectedValue)
+                {
+                    item.IsSelected = true;
+                }
+                else {
+                    item.IsSelected = false;
+                }
+                Console.WriteLine(content);
+
+                ComboBox_MeasureStart.Items.Add(item);
+            }
+        }
+
+        private void InitIntervalComboBox()
+        {
+            int selectedValue = Properties.Settings.Default.interval;
+            int[] intervals = [5, 10, 15, 20, 30, 60];
+            for (int i = 0; i < intervals.Length; i++)
+            {
+                ComboBoxItem item = new ComboBoxItem();
+                string content = intervals[i].ToString() + " minút";
+                item.Content = content;
+
+                if (intervals[i] == selectedValue)
+                {
+                    item.IsSelected = true;
+                }
+                else
+                {
+                    item.IsSelected = false;
+                }
+                Console.WriteLine(content);
+
+                ComboBox_Interval.Items.Add(item);
+            }
         }
 
         public void ToMainPage(object sender, RoutedEventArgs e)
         {
             ((MainWindow)Application.Current.MainWindow).navigateToMainPage();
+        }
+
+        public void Save(object sender, RoutedEventArgs e)
+        {
+            int usageAgreedMax = Int32.Parse(TextBox_UsageAgreedMax.Text);
+            int usageSetMax = Int32.Parse(TextBox_UsageSetMax.Text);
+            int throughputAgreed = Int32.Parse(TextBox_ThroughputAgreed.Text);
+            string measureStart = ((ComboBoxItem)ComboBox_MeasureStart.SelectedItem).Content.ToString();
+            string intervalVal = ((ComboBoxItem)ComboBox_Interval.SelectedItem).Content.ToString();
+            int interval = Int32.Parse(intervalVal.Split(' ')[0]);
+
+
+            Console.WriteLine(usageAgreedMax);
+            Console.WriteLine(usageSetMax);
+            Console.WriteLine(throughputAgreed);
+            Console.WriteLine(measureStart);
+            Console.WriteLine(interval);
+
+            // save to properties
+            Properties.Settings.Default.usage_agreed_max = usageAgreedMax;
+            Properties.Settings.Default.usage_set_max = usageSetMax;
+            Properties.Settings.Default.throughput_agreed = throughputAgreed;
+            Properties.Settings.Default.measure_start = measureStart;
+            Properties.Settings.Default.interval = interval;
+
+            Properties.Settings.Default.Save();
         }
     }
 }

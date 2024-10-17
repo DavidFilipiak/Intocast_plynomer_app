@@ -43,5 +43,65 @@ namespace IntocastGasMeterApp.Properties {
                 this["run_on_startup"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("00:00")]
+        public string measure_start {
+            get {
+                return ((string)(this["measure_start"]));
+            }
+            set {
+                this["measure_start"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
+        public int interval {
+            get {
+                return ((int)(this["interval"]));
+            }
+            set {
+                this["interval"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public double usage_agreed_max {
+            get {
+                return ((double)(this["usage_agreed_max"]));
+            }
+            set {
+                this["usage_agreed_max"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public double usage_set_max {
+            get {
+                return ((double)(this["usage_set_max"]));
+            }
+            set {
+                this["usage_set_max"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public double throughput_agreed {
+            get {
+                return ((double)(this["throughput_agreed"]));
+            }
+            set {
+                this["throughput_agreed"] = value;
+            }
+        }
     }
 }

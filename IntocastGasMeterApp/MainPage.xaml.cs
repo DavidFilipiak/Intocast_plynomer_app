@@ -14,6 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using IntocastGasMeterApp.services;
 using IntocastGasMeterApp.models;
+using System.ComponentModel;
 
 namespace IntocastGasMeterApp
 {
@@ -29,7 +30,12 @@ namespace IntocastGasMeterApp
             this.api = ApiService.GetInstance();
 
             InitializeComponent();
+
+            ThroughputDiff = (Properties.Settings.Default.throughput_agreed - 1000).ToString();
+            Label_ThroughputDiff.Content = ThroughputDiff;
         }
+
+        public string ThroughputDiff { get; set; }
 
         public void ToSettings(object sender, RoutedEventArgs e)
         {

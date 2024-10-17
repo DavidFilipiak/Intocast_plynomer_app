@@ -4,6 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:IntocastGasMeterApp"
+      xmlns:Properties="clr-namespace:IntocastGasMeterApp.Properties"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="MainPage" Background="White">
@@ -41,9 +42,11 @@
             <GroupBox Header="Spotreba" Grid.Column="1" Grid.Row="0">
                 <StackPanel>
                     <Label FontSize="10" Margin="0" Padding="0">Dohodnuté maximum 24h</Label>
-                    <Label BorderBrush="Black" Padding="5" BorderThickness="2" HorizontalContentAlignment="Right" HorizontalAlignment="Right" Width="100" MaxHeight="30">11000</Label>
+                    <Label BorderBrush="Black" Padding="5" BorderThickness="2" HorizontalContentAlignment="Right" HorizontalAlignment="Right" Width="100" MaxHeight="30" 
+                           Content="{Binding Source={x:Static Properties:Settings.Default}, Path=usage_agreed_max, Mode=OneWay}"></Label>
                     <Label FontSize="10" Margin="0" Padding="0">Nastavené maximum 24h</Label>
-                    <Label BorderBrush="Black" Padding="5" BorderThickness="2" HorizontalContentAlignment="Right" HorizontalAlignment="Right" Width="100" MaxHeight="30">11000</Label>
+                    <Label BorderBrush="Black" Padding="5" BorderThickness="2" HorizontalContentAlignment="Right" HorizontalAlignment="Right" Width="100" MaxHeight="30"
+                           Content="{Binding Source={x:Static Properties:Settings.Default}, Path=usage_set_max, Mode=OneWay}"></Label>
                     <Label FontSize="10" Margin="0" Padding="0">Spotrebované</Label>
                     <Label BorderBrush="Black" Padding="5" BorderThickness="2" HorizontalContentAlignment="Right" HorizontalAlignment="Right" Width="100" MaxHeight="30">11000</Label>
                     <Label FontSize="10" Margin="0" Padding="0">Zostáva</Label>
@@ -63,9 +66,10 @@
                     <Label FontSize="10" Margin="0" Padding="0">Okamžitý prietok</Label>
                     <Label BorderBrush="Black" Padding="5" BorderThickness="2" HorizontalContentAlignment="Right" HorizontalAlignment="Right" Width="100" MaxHeight="30">11000</Label>
                     <Label FontSize="10" Margin="0" Padding="0">Doporučený prietok</Label>
-                    <Label BorderBrush="Black" Padding="5" BorderThickness="2" HorizontalContentAlignment="Right" HorizontalAlignment="Right" Width="100" MaxHeight="30">11000</Label>
+                    <Label BorderBrush="Black" Padding="5" BorderThickness="2" HorizontalContentAlignment="Right" HorizontalAlignment="Right" Width="100" MaxHeight="30"
+                           Content="{Binding Source={x:Static Properties:Settings.Default}, Path=throughput_agreed, Mode=OneWay}"></Label>
                     <Label FontSize="10" Margin="0" Padding="0">Rozdiel</Label>
-                    <Label BorderBrush="Black" Padding="5" BorderThickness="2" HorizontalContentAlignment="Right" HorizontalAlignment="Right" Width="100" MaxHeight="30">11000</Label>
+                    <Label BorderBrush="Black" Padding="5" BorderThickness="2" HorizontalContentAlignment="Right" HorizontalAlignment="Right" Width="100" MaxHeight="30" x:Name="Label_ThroughputDiff">11000</Label>
                 </StackPanel>
             </GroupBox>
             <Grid Grid.Column="2" Grid.Row="1">
