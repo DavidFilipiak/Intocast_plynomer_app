@@ -31,7 +31,8 @@ namespace IntocastGasMeterApp
 
             InitializeComponent();
 
-            barChart.SetLine(Properties.Settings.Default.usage_agreed_max);
+            barChart.SetSetLine(Properties.Settings.Default.usage_set_max);
+            barChart.SetAgreedLine(Properties.Settings.Default.usage_agreed_max);
 
             ThroughputDiff = (Properties.Settings.Default.throughput_agreed - 1000).ToString();
             Label_ThroughputDiff.Content = ThroughputDiff;
