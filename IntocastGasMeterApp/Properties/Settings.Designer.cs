@@ -103,5 +103,17 @@ namespace IntocastGasMeterApp.Properties {
                 this["throughput_agreed"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string sessionId {
+            get {
+                return ((string)(this["sessionId"]));
+            }
+            set {
+                this["sessionId"] = value;
+            }
+        }
     }
 }

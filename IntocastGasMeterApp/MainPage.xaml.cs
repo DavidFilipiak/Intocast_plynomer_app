@@ -53,7 +53,7 @@ namespace IntocastGasMeterApp
 
         public void AddColumn(object sender, RoutedEventArgs e)
         {
-            double value = Properties.Settings.Default.usage_agreed_max / 24;
+            double value = Properties.Settings.Default.usage_agreed_max / (24 * 12);
             barChart.addColumn((int)value);
         }
     }

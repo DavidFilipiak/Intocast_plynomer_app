@@ -13,7 +13,20 @@ namespace IntocastGasMeterApp.services
     internal class ApiService
     {
         private const string SPP_API_URL = "https://gasapi.spp-distribucia.sk/Website/sppdapi/";
-        public string sessionId { get; set; } = "";
+        private string _sessionId = String.Empty;
+        public string sessionId
+        {
+            get {
+                return this._sessionId;
+            }
+            private set
+            {
+                this._sessionId = value;
+            }
+        }
+
+        public event EventHandler<bool> LoginResultEvent;
+
 
         private HttpClient client;
         private static ApiService instance = null;
@@ -52,6 +65,19 @@ namespace IntocastGasMeterApp.services
 
         public string Login(string username, string password)
         {
+            // temporary login for testing
+            if (username == "admin" && password == "admin")
+            {
+                LoginResultEvent?.Invoke(this, true);
+                this.sessionId = "admin";
+                return this.sessionId;
+            }
+            else
+            {
+                LoginResultEvent?.Invoke(this, false);
+                return "Error";
+            }
+
             var jsonBody = JsonConvert.SerializeObject(new { username = username, password = password });
             HttpContent content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
             HttpResponseMessage response = this.client.PostAsync("logon.rails", content).Result;
@@ -60,10 +86,14 @@ namespace IntocastGasMeterApp.services
                 string responseString = response.Content.ReadAsStringAsync().Result;
                 dynamic responseJson = JsonConvert.DeserializeObject(responseString);
                 this.sessionId = responseJson.sessionId;
+                Properties.Settings.Default.sessionId = this.sessionId;
+
+                LoginResultEvent?.Invoke(this, true);
                 return this.sessionId;
             }
             else
             {
+                LoginResultEvent?.Invoke(this, false);
                 return "Error";
             }
         }

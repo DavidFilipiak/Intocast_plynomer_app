@@ -1,6 +1,8 @@
-﻿using System;
+﻿using IntocastGasMeterApp.services;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -20,8 +22,13 @@ namespace IntocastGasMeterApp
     /// </summary>
     public partial class SettingsPage : Page
     {
+        private ApiService api;
+
         public SettingsPage()
         {
+            this.api = ApiService.GetInstance();
+            this.api.LoginResultEvent += this.onLoginResult;
+
             InitializeComponent();
             InitMeasureComboBox();
             InitIntervalComboBox();
@@ -47,7 +54,6 @@ namespace IntocastGasMeterApp
                 else {
                     item.IsSelected = false;
                 }
-                Console.WriteLine(content);
 
                 ComboBox_MeasureStart.Items.Add(item);
             }
@@ -71,7 +77,6 @@ namespace IntocastGasMeterApp
                 {
                     item.IsSelected = false;
                 }
-                Console.WriteLine(content);
 
                 ComboBox_Interval.Items.Add(item);
             }
@@ -79,6 +84,7 @@ namespace IntocastGasMeterApp
 
         public void ToMainPage(object sender, RoutedEventArgs e)
         {
+            this.api.LoginResultEvent -= this.onLoginResult;
             ((MainWindow)Application.Current.MainWindow).navigateToMainPage();
         }
 
@@ -106,6 +112,20 @@ namespace IntocastGasMeterApp
             Properties.Settings.Default.interval = interval;
 
             Properties.Settings.Default.Save();
+        }
+
+        // auth section
+        private void onLoginResult(object sender, bool result)
+        {
+            if (result)
+            {
+                AuthContent.Visibility = Visibility.Hidden;
+                SettingsContent.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                Console.WriteLine("Login failed");
+            }
         }
     }
 }

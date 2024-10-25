@@ -9,58 +9,70 @@
       d:DesignHeight="450" d:DesignWidth="800"
       Title="SettingsPage" Background="White">
 
-    <ScrollViewer>
-        <StackPanel>
+    <Grid>
+        <StackPanel x:Name="AuthContent" Visibility="Visible">
             <StackPanel Orientation="Horizontal">
                 <Button HorizontalAlignment="Left" Width="100" Margin="10" Click="ToMainPage">Späť</Button>
-                <Button HorizontalAlignment="Left" Width="100" Margin="10" Click="Save">Uložiť Zmeny</Button>
             </StackPanel>
-            
-            <GroupBox Header="Všeobecné" Margin="10" Padding="10">
-                <StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <Label>Začiatok merania</Label>
-                        <ComboBox Width="100" Height="30" x:Name="ComboBox_MeasureStart">
-                        </ComboBox>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <Label>Zobrazený interval merania</Label>
-                        <ComboBox Width="100" Height="30" x:Name="ComboBox_Interval" >
-                        </ComboBox>
-                    </StackPanel>
-                </StackPanel>
-            </GroupBox>
-            <GroupBox Header="Spotreba" Margin="10" Padding="10">
-                <StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <Label>Dohodnuté maximum (24h)</Label>
-                        <TextBox Width="100" Height="30" x:Name="TextBox_UsageAgreedMax" Text="{Binding Source={x:Static Properties:Settings.Default}, Path=usage_agreed_max, Mode=OneWay}"></TextBox>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <Label>Nastavené maximum (24h)</Label>
-                        <TextBox Width="100" Height="30" x:Name="TextBox_UsageSetMax" Text="{Binding Source={x:Static Properties:Settings.Default}, Path=usage_set_max, Mode=OneWay}"></TextBox>
-                    </StackPanel>
-                </StackPanel>
-            </GroupBox>
-            <GroupBox Header="Prietok" Margin="10" Padding="10">
-                <StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <Label>Dohodnutý prietok</Label>
-                        <TextBox Width="100" Height="30" x:Name="TextBox_ThroughputAgreed" Text="{Binding Source={x:Static Properties:Settings.Default}, Path=throughput_agreed, Mode=OneWay}"></TextBox>
-                    </StackPanel>
-                </StackPanel>
-            </GroupBox>
-            <GroupBox Header="Ďalšie" Margin="10" Padding="10">
-                <StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <Label>Zapnúť program pri spusteí počítača</Label>
-                        <ComboBox Width="100" Height="30">
-                            <ComboBoxItem IsSelected="True">Áno</ComboBoxItem>
-                            <ComboBoxItem>Nie</ComboBoxItem>
-                        </ComboBox>
-                    </StackPanel>
-                </StackPanel>
-            </GroupBox>
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" >
+                <Label Margin="0,0,0,30" FontSize="20">Pre úpravu nastavení je nutné zadanie prihlasovacích údajov</Label>
+                <local:AuthControl></local:AuthControl>
+            </StackPanel>            
         </StackPanel>
-    </ScrollViewer>
+
+        <ScrollViewer x:Name="SettingsContent" Visibility="Collapsed">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Button HorizontalAlignment="Left" Width="100" Margin="10" Click="ToMainPage">Späť</Button>
+                    <Button HorizontalAlignment="Left" Width="100" Margin="10" Click="Save">Uložiť Zmeny</Button>
+                </StackPanel>
+
+                <GroupBox Header="Všeobecné" Margin="10" Padding="10">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Label>Začiatok merania</Label>
+                            <ComboBox Width="100" Height="30" x:Name="ComboBox_MeasureStart">
+                            </ComboBox>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Label>Zobrazený interval merania</Label>
+                            <ComboBox Width="100" Height="30" x:Name="ComboBox_Interval" >
+                            </ComboBox>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+                <GroupBox Header="Spotreba" Margin="10" Padding="10">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Label>Dohodnuté maximum (24h)</Label>
+                            <TextBox Width="100" Height="30" x:Name="TextBox_UsageAgreedMax" Text="{Binding Source={x:Static Properties:Settings.Default}, Path=usage_agreed_max, Mode=OneWay}"></TextBox>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Label>Nastavené maximum (24h)</Label>
+                            <TextBox Width="100" Height="30" x:Name="TextBox_UsageSetMax" Text="{Binding Source={x:Static Properties:Settings.Default}, Path=usage_set_max, Mode=OneWay}"></TextBox>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+                <GroupBox Header="Prietok" Margin="10" Padding="10">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Label>Dohodnutý prietok</Label>
+                            <TextBox Width="100" Height="30" x:Name="TextBox_ThroughputAgreed" Text="{Binding Source={x:Static Properties:Settings.Default}, Path=throughput_agreed, Mode=OneWay}"></TextBox>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+                <GroupBox Header="Ďalšie" Margin="10" Padding="10">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Label>Zapnúť program pri spusteí počítača</Label>
+                            <ComboBox Width="100" Height="30">
+                                <ComboBoxItem IsSelected="True">Áno</ComboBoxItem>
+                                <ComboBoxItem>Nie</ComboBoxItem>
+                            </ComboBox>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
 </Page>

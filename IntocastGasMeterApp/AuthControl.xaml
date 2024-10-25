@@ -1,0 +1,16 @@
+﻿<UserControl x:Class="IntocastGasMeterApp.AuthControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:IntocastGasMeterApp"
+             mc:Ignorable="d" Width="220" Height="Auto" Background="White">
+    
+    <StackPanel Width="200" Margin="10">
+        <Label>Použivateľké meno</Label>
+        <TextBox x:Name="TextBox_username"></TextBox>
+        <Label>Heslo</Label>
+        <PasswordBox x:Name="TextBox_password"></PasswordBox>
+        <Button Margin="0,20,0,0" Width="100" Click="Login">Prihlásiť</Button>
+    </StackPanel>
+</UserControl>

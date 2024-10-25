@@ -35,6 +35,9 @@ namespace IntocastGasMeterApp
         private readonly ObservableCollection<ObservablePoint> _agreedLine;
         private readonly ObservableCollection<ObservablePoint> _setLine;
 
+        private const int MAX_X = 24 * 12;
+        private string[] xLabels = new string[MAX_X];
+
         public BarChartControl()
         {
             InitializeComponent();
@@ -72,6 +75,7 @@ namespace IntocastGasMeterApp
                 }
             };
 
+            XAxes[0].Labeler = XAxisLabeler;
             BarChart.XAxes = XAxes;
             BarChart.YAxes = YAxes;
         }
@@ -82,21 +86,31 @@ namespace IntocastGasMeterApp
         {
             new Axis
             {
-                MaxLimit = 24,
+                MaxLimit = MAX_X,
+                LabelsRotation = 45,
+                ShowSeparatorLines = false,
+                CustomSeparators = new double[] {0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 240, 252, 264, 276, 288 },
             }
         };
         public Axis[] YAxes { get; set; } = new Axis[]
         {
             new Axis
             {
-                //MaxLimit = 240,
                 MinLimit = 0,
             }
-        };  
+        };
+        
+        private string XAxisLabeler(double value)
+        {
+            int minutes = ((int)value % 12) * 5;
+            int hours = (int)value / 12;
+            string minutesString = minutes < 10 ? "0" + minutes.ToString() : minutes.ToString();
+            return hours.ToString() + ":" + minutesString;
+        }
 
         public void addColumn(double value)
         {
-            if (actualValues.Count == 24)
+            if (actualValues.Count == MAX_X)
             {
                 return;
             }
@@ -107,7 +121,7 @@ namespace IntocastGasMeterApp
 
         public void SetAgreedLine(double y)
         {
-            int x = 24;
+            int x = MAX_X;
             ObservablePoint NewPoint = new ObservablePoint(x, y);
             if (_agreedLine.Count > 1)
             {
@@ -118,7 +132,7 @@ namespace IntocastGasMeterApp
 
         public void SetSetLine(double y)
         {
-            int x = 24;
+            int x = MAX_X;
             ObservablePoint NewPoint = new ObservablePoint(x, y);
             if (_setLine.Count > 1)
             {
