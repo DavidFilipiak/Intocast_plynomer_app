@@ -25,6 +25,21 @@ namespace IntocastGasMeterApp
         private string _userName = string.Empty;
         private string _password = string.Empty;
 
+        public static readonly DependencyProperty IsMainProperty =
+            DependencyProperty.Register(
+                "IsName",              // Property name
+                typeof(bool),            // Property type
+                typeof(AuthControl),     // Owner type
+                new PropertyMetadata(false) // Default value
+            );
+
+        // CLR property wrapper
+        public bool IsMain
+        {
+            get => (bool)GetValue(IsMainProperty);
+            set => SetValue(IsMainProperty, value);
+        }
+
         public AuthControl()
         {
             this.api = ApiService.GetInstance();
@@ -38,7 +53,7 @@ namespace IntocastGasMeterApp
             string password = TextBox_password.Password;
             string username = TextBox_username.Text;
 
-            string response = this.api.Login(username, password);
+            string response = this.api.Login(username, password, IsMain);
         }
     }
 }

@@ -35,6 +35,8 @@ namespace IntocastGasMeterApp.services
             this.client = new HttpClient();
             this.client.BaseAddress = new Uri("http://calapi.inadiutorium.cz/api/v0/en/");
             this.client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            this.sessionId = Properties.Settings.Default.sessionId;
+            Console.WriteLine(this.sessionId);
         }
 
         // singleton service
@@ -63,13 +65,16 @@ namespace IntocastGasMeterApp.services
             }
         }
 
-        public string Login(string username, string password)
+        public string Login(string username, string password, bool saveSessionId)
         {
+            Console.WriteLine(saveSessionId);
             // temporary login for testing
             if (username == "admin" && password == "admin")
             {
                 LoginResultEvent?.Invoke(this, true);
                 this.sessionId = "admin";
+                Properties.Settings.Default.sessionId = this.sessionId;
+                if (saveSessionId) Properties.Settings.Default.Save();
                 return this.sessionId;
             }
             else
@@ -87,6 +92,7 @@ namespace IntocastGasMeterApp.services
                 dynamic responseJson = JsonConvert.DeserializeObject(responseString);
                 this.sessionId = responseJson.sessionId;
                 Properties.Settings.Default.sessionId = this.sessionId;
+                if (saveSessionId) Properties.Settings.Default.Save();
 
                 LoginResultEvent?.Invoke(this, true);
                 return this.sessionId;

@@ -15,6 +15,8 @@ using LiveChartsCore.SkiaSharpView.Painting;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore;
 using SkiaSharp;
+using IntocastGasMeterApp.services;
+using System.Configuration;
 
 
 namespace IntocastGasMeterApp
@@ -24,22 +26,46 @@ namespace IntocastGasMeterApp
     /// </summary>
     public partial class MainWindow : Window
     {
-        
+        private ApiService api;
         public MainWindow()
         {
+            this.api = ApiService.GetInstance();
+            this.api.LoginResultEvent += this.onLoginResult;
+
             InitializeComponent();
 
-            this.navigateToMainPage();
+            string sessionId = api.sessionId;
+
+            Console.WriteLine(sessionId);
+            if (!String.Equals(sessionId, ""))
+            {
+                navigateToMainPage();
+            }
         }
 
         public void navigateToMainPage()
         {
+            AuthContent.Visibility = Visibility.Hidden;
+            MainFrame.Visibility = Visibility.Visible;
             MainFrame.Navigate(new MainPage());
         }
 
         public void navigateToSettingsPage()
         {
             MainFrame.Navigate(new SettingsPage());
+        }
+
+        private void onLoginResult(object sender, bool result)
+        {
+            if (result)
+            {
+                this.api.LoginResultEvent -= this.onLoginResult;
+                navigateToMainPage();
+            }
+            else
+            {
+                Console.WriteLine("Login failed");
+            }
         }
     }
 }

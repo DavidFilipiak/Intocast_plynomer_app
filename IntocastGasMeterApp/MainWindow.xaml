@@ -12,6 +12,10 @@
         Width="800">
     <Grid>
         <!-- The Frame will be used for navigation -->
-        <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden" />
+        <StackPanel x:Name="AuthContent" VerticalAlignment="Center" HorizontalAlignment="Center" >
+            <Label Margin="0,0,0,30" FontSize="25" HorizontalContentAlignment="Center">Prhlásenie</Label>
+            <local:AuthControl IsMain="True"></local:AuthControl>
+        </StackPanel>
+        <Frame Visibility="Hidden" x:Name="MainFrame" NavigationUIVisibility="Hidden" />
     </Grid>
 </Window>

@@ -87,9 +87,10 @@ namespace IntocastGasMeterApp
             new Axis
             {
                 MaxLimit = MAX_X,
-                LabelsRotation = 45,
+                LabelsRotation = 60,
                 ShowSeparatorLines = false,
-                CustomSeparators = new double[] {0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 240, 252, 264, 276, 288 },
+                
+                CustomSeparators = new double[] {0, 24, 48, 72, 96, 120, 144, 168, 192, 216, 240, 264, 288 },
             }
         };
         public Axis[] YAxes { get; set; } = new Axis[]
