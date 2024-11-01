@@ -8,12 +8,13 @@
         xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
         mc:Ignorable="d"
         Title="MainWindow" 
-        Height="500" 
-        Width="800">
+        Height="600" 
+        Width="1000"        
+        Background="{StaticResource BackgroundColorBrush}" >
     <Grid>
         <!-- The Frame will be used for navigation -->
         <StackPanel x:Name="AuthContent" VerticalAlignment="Center" HorizontalAlignment="Center" >
-            <Label Margin="0,0,0,30" FontSize="25" HorizontalContentAlignment="Center">Prhlásenie</Label>
+            <Label Margin="0,0,0,30" FontSize="25" HorizontalContentAlignment="Center">Prihlásenie</Label>
             <local:AuthControl IsMain="True"></local:AuthControl>
         </StackPanel>
         <Frame Visibility="Hidden" x:Name="MainFrame" NavigationUIVisibility="Hidden" />

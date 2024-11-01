@@ -6,8 +6,8 @@
       xmlns:local="clr-namespace:IntocastGasMeterApp"
       xmlns:Properties="clr-namespace:IntocastGasMeterApp.Properties"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
-      Title="MainPage" Background="White">
+      d:DesignHeight="600" d:DesignWidth="1000"
+      Title="MainPage" Background="{StaticResource BackgroundColorBrush}">
 
     <DockPanel Margin="0">
         <Menu DockPanel.Dock="Top">
@@ -18,13 +18,15 @@
             <MenuItem Header="stlpec" Click="AddColumn"></MenuItem>
         </Menu>
 
-        <DockPanel DockPanel.Dock="Top" LastChildFill="False">
-            <DatePicker DockPanel.Dock="Left" x:Name="DatePicker" VerticalAlignment="Center" Width="150" Height="30" Padding="5"></DatePicker>
+        <Border DockPanel.Dock="Top" BorderThickness="0,0,0,5" BorderBrush="{StaticResource PrimaryColorBrush}">
+            <DockPanel LastChildFill="False" Background="{StaticResource RedGradientBrush}" Opacity="0.7">
+                <DatePicker DockPanel.Dock="Left" x:Name="DatePicker" VerticalAlignment="Center" Width="150" Height="30" Padding="5"></DatePicker>
 
-            <ComboBox DockPanel.Dock="Right" x:Name="ComboBox_GasMeter" VerticalAlignment="Center" Width="150" Height="30" Padding="5">
-                <ComboBoxItem IsSelected="True" Content="Plynomer 1"/>
-            </ComboBox>
-        </DockPanel>
+                <ComboBox DockPanel.Dock="Right" x:Name="ComboBox_GasMeter" VerticalAlignment="Center" Width="150" Height="30" Padding="5">
+                    <ComboBoxItem IsSelected="True" Content="Plynomer 1"/>
+                </ComboBox>
+            </DockPanel>
+        </Border>
 
         <Grid>
             <Grid.ColumnDefinitions>
@@ -37,23 +39,30 @@
                 <RowDefinition></RowDefinition>
             </Grid.RowDefinitions>
 
-            <local:BarChartControl Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" x:Name="barChart" Margin="15"></local:BarChartControl>
+            <Border Style="{StaticResource GroupBorder}" Grid.Column="0" Grid.Row="0" Grid.RowSpan="2">
+                <local:BarChartControl x:Name="barChart" Margin="5"></local:BarChartControl>
+            </Border>            
 
-            <GroupBox Header="Spotreba" Grid.Column="1" Grid.Row="0">
+            <Border Grid.Column="1" Grid.Row="0" Style="{StaticResource GroupBorder}">
                 <StackPanel>
-                    <Label FontSize="10" Margin="0" Padding="0">Dohodnuté maximum 24h</Label>
-                    <Label BorderBrush="Black" Padding="5" BorderThickness="2" HorizontalContentAlignment="Right" HorizontalAlignment="Right" Width="100" MaxHeight="30" 
-                           Content="{Binding Source={x:Static Properties:Settings.Default}, Path=usage_agreed_max, Mode=OneWay}"></Label>
-                    <Label FontSize="10" Margin="0" Padding="0">Nastavené maximum 24h</Label>
-                    <Label BorderBrush="Black" Padding="5" BorderThickness="2" HorizontalContentAlignment="Right" HorizontalAlignment="Right" Width="100" MaxHeight="30"
-                           Content="{Binding Source={x:Static Properties:Settings.Default}, Path=usage_set_max, Mode=OneWay}"></Label>
-                    <Label FontSize="10" Margin="0" Padding="0">Spotrebované</Label>
-                    <Label BorderBrush="Black" Padding="5" BorderThickness="2" HorizontalContentAlignment="Right" HorizontalAlignment="Right" Width="100" MaxHeight="30">11000</Label>
-                    <Label FontSize="10" Margin="0" Padding="0">Zostáva</Label>
-                    <Label BorderBrush="Black" Padding="5" BorderThickness="2" HorizontalContentAlignment="Right" HorizontalAlignment="Right" Width="100" MaxHeight="30">11000</Label>
+                    <Label Style="{StaticResource GroupNameLabel}">Spotreba</Label>
+                    <Label Style="{StaticResource ValueNameLabel}">Dohodnuté maximum 24h</Label>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Border Style="{StaticResource LegendLine}" Background="Red"/>
+                        <Label Style="{StaticResource ValueLabel}" Width="Auto" Content="{Binding Source={x:Static Properties:Settings.Default}, Path=usage_agreed_max, Mode=OneWay}"></Label>
+                    </StackPanel>
+                    <Label Style="{StaticResource ValueNameLabel}">Nastavené maximum 24h</Label>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Border Style="{StaticResource LegendLine}" Background="#ffd700" />
+                        <Label Style="{StaticResource ValueLabel}" Width="Auto" Content="{Binding Source={x:Static Properties:Settings.Default}, Path=usage_set_max, Mode=OneWay}"></Label>
+                    </StackPanel>                    
+                    <Label Style="{StaticResource ValueNameLabel}">Spotrebované</Label>
+                    <Label Style="{StaticResource ValueLabel}">11000</Label>
+                    <Label Style="{StaticResource ValueNameLabel}">Zostáva</Label>
+                    <Label Style="{StaticResource ValueLabel}">11000</Label>
                 </StackPanel>
-            </GroupBox>
-            <GroupBox Header="Komunikácia" Grid.Column="2" Grid.Row="0">
+            </Border>
+            <GroupBox Header="Komunikácia" Grid.Column="2" Grid.Row="0" Margin="10" Background="{StaticResource ElementColorBrush}">
                 <StackPanel>
                     <Label FontSize="10" Margin="0" Padding="0">Status</Label>
                     <Label BorderBrush="Black" Padding="5" BorderThickness="2" HorizontalContentAlignment="Right" HorizontalAlignment="Right" Width="100" MaxHeight="30">11000</Label>
@@ -61,35 +70,38 @@
                     <Label BorderBrush="Black" Padding="5" BorderThickness="2" HorizontalContentAlignment="Right" HorizontalAlignment="Right" Width="100" MaxHeight="30">11000</Label>
                 </StackPanel>
             </GroupBox>
-            <GroupBox Header="Prietok" Grid.Column="1" Grid.Row="1">
+            <Border Grid.Column="1" Grid.Row="1" Style="{StaticResource GroupBorder}">
                 <StackPanel>
-                    <Label FontSize="10" Margin="0" Padding="0">Okamžitý prietok</Label>
-                    <Label BorderBrush="Black" Padding="5" BorderThickness="2" HorizontalContentAlignment="Right" HorizontalAlignment="Right" Width="100" MaxHeight="30">11000</Label>
-                    <Label FontSize="10" Margin="0" Padding="0">Doporučený prietok</Label>
-                    <Label BorderBrush="Black" Padding="5" BorderThickness="2" HorizontalContentAlignment="Right" HorizontalAlignment="Right" Width="100" MaxHeight="30"
-                           Content="{Binding Source={x:Static Properties:Settings.Default}, Path=throughput_agreed, Mode=OneWay}"></Label>
-                    <Label FontSize="10" Margin="0" Padding="0">Rozdiel</Label>
-                    <Label BorderBrush="Black" Padding="5" BorderThickness="2" HorizontalContentAlignment="Right" HorizontalAlignment="Right" Width="100" MaxHeight="30" x:Name="Label_ThroughputDiff">11000</Label>
+                    <Label Style="{StaticResource GroupNameLabel}">Prietok</Label>
+                    <Label Style="{StaticResource ValueNameLabel}">Okamžitý prietok</Label>
+                    <Label Style="{StaticResource ValueLabel}">11000</Label>
+                    <Label Style="{StaticResource ValueNameLabel}">Doporučený prietok</Label>
+                    <Label Style="{StaticResource ValueLabel}"
+Content="{Binding Source={x:Static Properties:Settings.Default}, Path=throughput_agreed, Mode=OneWay}"></Label>
+                    <Label Style="{StaticResource ValueNameLabel}">Rozdiel</Label>
+                    <Label Style="{StaticResource ValueLabel}" x:Name="Label_ThroughputDiff">11000</Label>
                 </StackPanel>
-            </GroupBox>
+            </Border>            
             <Grid Grid.Column="2" Grid.Row="1">
                 <Grid.RowDefinitions>
                     <RowDefinition></RowDefinition>
                     <RowDefinition></RowDefinition>
                 </Grid.RowDefinitions>
 
-                <GroupBox Header="Teplota" Grid.Row="0">
+                <Border Grid.Row="0" Style="{StaticResource GroupBorder}">
                     <StackPanel>
-                        <Label FontSize="10" Margin="0" Padding="0">Plynu(°C)</Label>
-                        <Label BorderBrush="Black" Padding="5" BorderThickness="2" HorizontalContentAlignment="Right" HorizontalAlignment="Right" Width="100" MaxHeight="30">11000</Label>
+                        <Label Style="{StaticResource GroupNameLabel}">Teplota</Label>
+                        <Label Style="{StaticResource ValueNameLabel}">Plynu(°C)</Label>
+                        <Label Style="{StaticResource ValueLabel}">11000</Label>
                     </StackPanel>
-                </GroupBox>
-                <GroupBox Header="Tlak" Grid.Row="1">
+                </Border>
+                <Border Grid.Row="1" Style="{StaticResource GroupBorder}">
                     <StackPanel>
-                        <Label FontSize="10" Margin="0" Padding="0">Plynu(°C)</Label>
-                        <Label BorderBrush="Black" Padding="5" BorderThickness="2" HorizontalContentAlignment="Right" HorizontalAlignment="Right" Width="100" MaxHeight="30">11000</Label>
+                        <Label Style="{StaticResource GroupNameLabel}">Tlak</Label>
+                        <Label Style="{StaticResource ValueNameLabel}">Plynu(°C)</Label>
+                        <Label Style="{StaticResource ValueLabel}">11000</Label>
                     </StackPanel>
-                </GroupBox>
+                </Border>
             </Grid>
 
         </Grid>
