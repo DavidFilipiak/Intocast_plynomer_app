@@ -4,14 +4,16 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:IntocastGasMeterApp"
-             mc:Ignorable="d" Width="220" Height="Auto" Background="Transparent">
-    
-    <StackPanel Width="200" Height="Auto" Margin="10">
-        <Label>Použivateľské meno</Label>
-        <TextBox x:Name="TextBox_username" Style="{StaticResource InputTextBoxStyle}"></TextBox>       
-        <Label>Heslo</Label>
-        <PasswordBox x:Name="TextBox_password" Style="{StaticResource InputPasswordStyle}"></PasswordBox>
+             mc:Ignorable="d" Width="Auto" Height="Auto" Background="Transparent">
 
-        <Button Margin="0,50,0,0" Width="200" Click="Login" Style="{StaticResource PrimaryButton}">Prihlásiť</Button>
-    </StackPanel>
+    <Border Style="{StaticResource GroupBorder}" Padding="40" Width="300" Height="Auto">
+        <StackPanel>
+            <Label>Použivateľské meno</Label>
+            <TextBox x:Name="TextBox_username" Style="{StaticResource InputTextBoxStyle}"></TextBox>
+            <Label Margin="0,5,0,0">Heslo</Label>
+            <PasswordBox x:Name="TextBox_password" Style="{StaticResource InputPasswordStyle}"></PasswordBox>
+
+            <Button Margin="0,50,0,0" Width="150" Height="30" Click="Login" Style="{StaticResource LoginButton}">Prihlásiť</Button>
+        </StackPanel>
+    </Border>    
 </UserControl>
