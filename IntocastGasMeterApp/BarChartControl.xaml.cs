@@ -22,6 +22,8 @@ using LiveChartsCore.Defaults;
 using System.Collections.ObjectModel;
 using System.Collections.Immutable;
 using CommunityToolkit.Mvvm.Input;
+using System.Printing;
+using IntocastGasMeterApp.services;
 
 namespace IntocastGasMeterApp
 {
@@ -30,20 +32,21 @@ namespace IntocastGasMeterApp
     /// </summary>
     public partial class BarChartControl : UserControl
     {
-        private List<double> actualValues = new List<double>();
-        private readonly ObservableCollection<ObservableValue> _observableValues;
         private readonly ObservableCollection<ObservablePoint> _agreedLine;
         private readonly ObservableCollection<ObservablePoint> _setLine;
 
         private const int MAX_X = 24 * 12;
         private string[] xLabels = new string[MAX_X];
 
+        private DataService data;
+
         public BarChartControl()
         {
+            this.data = DataService.GetInstance();
+
             InitializeComponent();
             DataContext = this;
 
-            _observableValues = new ObservableCollection<ObservableValue>();
             _agreedLine = new ObservableCollection<ObservablePoint>();
             _agreedLine.Add(new ObservablePoint(0, 0));
             _setLine = new ObservableCollection<ObservablePoint>();
@@ -57,8 +60,9 @@ namespace IntocastGasMeterApp
                     GeometryFill = null,
                     GeometryStroke = null,
                     Fill = null,
-                    Stroke = new SolidColorPaint(new SKColor(255, 215, 0), 3)
-
+                    Stroke = new SolidColorPaint(new SKColor(255, 215, 0), 3),
+                    XToolTipLabelFormatter = null,
+                    YToolTipLabelFormatter = null
                 },
                 new LineSeries<ObservablePoint>
                 {
@@ -66,11 +70,13 @@ namespace IntocastGasMeterApp
                     GeometryFill = null,
                     GeometryStroke = null,
                     Fill = null,
-                    Stroke = new SolidColorPaint(new SKColor(255, 0, 0), 3)
+                    Stroke = new SolidColorPaint(new SKColor(255, 0, 0), 3),
+                    XToolTipLabelFormatter = null,
+                    YToolTipLabelFormatter = null
                 },
                 new ColumnSeries<ObservableValue>
                 {
-                    Values = _observableValues,
+                    Values = data.accumulatedUsage,
                     Fill = new SolidColorPaint(new SKColor(0, 0, 255)),
                 }
             };
@@ -111,13 +117,23 @@ namespace IntocastGasMeterApp
 
         public void addColumn(double value)
         {
-            if (actualValues.Count == MAX_X)
+            if (data.actualUsage.Count == MAX_X)
             {
                 return;
             }
-            double aggregatedValue = actualValues.Sum() + value;
-            actualValues.Add(value);
-            _observableValues.Add(new(aggregatedValue));
+            double aggregatedValue = Sum(data.actualUsage) + value;
+            data.actualUsage.Add(new(value));
+            data.accumulatedUsage.Add(new(aggregatedValue));
+        }
+
+        private double Sum(IEnumerable<ObservableValue> values)
+        {
+            double sum = 0;
+            foreach (ObservableValue value in values)
+            {
+                sum += (double)value.Value;
+            }
+            return sum;
         }
 
         public void SetAgreedLine(double y)
