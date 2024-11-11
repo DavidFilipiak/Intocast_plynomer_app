@@ -230,7 +230,7 @@
                                         <Trigger Property="IsSelected" Value="False">
                                             <Setter TargetName="TabItemBorder" Property="BorderBrush" Value="Transparent"/>
                                         </Trigger>
-                                        <Trigger Property="IsMouseDirectlyOver" Value="True">
+                                        <Trigger Property="IsMouseOver" Value="True">
                                             <Setter TargetName="TabItemBorder" Property="Background" Value="{StaticResource BackgroundColorBrush}"/>
                                         </Trigger>
                                     </ControlTemplate.Triggers>

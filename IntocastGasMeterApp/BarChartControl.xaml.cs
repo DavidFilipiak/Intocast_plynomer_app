@@ -37,12 +37,14 @@ namespace IntocastGasMeterApp
 
         private const int MAX_X = 24 * 12;
         private string[] xLabels = new string[MAX_X];
+        private readonly string measureStart = "00:00";
 
         private DataService data;
 
         public BarChartControl()
         {
             this.data = DataService.GetInstance();
+            this.measureStart = Properties.Settings.Default.measure_start;
 
             InitializeComponent();
             DataContext = this;
@@ -94,7 +96,7 @@ namespace IntocastGasMeterApp
             new Axis
             {
                 MaxLimit = MAX_X,
-                LabelsRotation = 60,
+                LabelsRotation = 30,
                 ShowSeparatorLines = false,
                 TextSize = 10,
                 CustomSeparators = new double[] {0, 24, 48, 72, 96, 120, 144, 168, 192, 216, 240, 264, 288 },
@@ -111,8 +113,10 @@ namespace IntocastGasMeterApp
         
         private string XAxisLabeler(double value)
         {
+            int measureStartHours = Int32.Parse(measureStart.Substring(0, 2));
+            value += measureStartHours * 12;
             int minutes = ((int)value % 12) * 5;
-            int hours = (int)value / 12;
+            int hours = value >= 24 * 12 ? (int)(value - 24 * 12) / 12 : (int)value / 12;
             string minutesString = minutes < 10 ? "0" + minutes.ToString() : minutes.ToString();
             return hours.ToString() + ":" + minutesString;
         }
