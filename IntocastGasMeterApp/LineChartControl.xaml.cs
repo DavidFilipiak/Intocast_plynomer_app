@@ -105,7 +105,7 @@ namespace IntocastGasMeterApp
                 MaxLimit = MAX_X,
                 LabelsRotation = 60,
                 ShowSeparatorLines = false,
-
+                TextSize = 10,
                 CustomSeparators = new double[] {0, 24, 48, 72, 96, 120, 144, 168, 192, 216, 240, 264, 288 },
             }
 };
@@ -114,6 +114,7 @@ namespace IntocastGasMeterApp
             new Axis
             {
                 MinLimit = 0,
+                TextSize = 12,
             }
         };
 
