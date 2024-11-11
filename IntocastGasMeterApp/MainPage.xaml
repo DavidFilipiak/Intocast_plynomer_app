@@ -48,22 +48,22 @@
                     <local:BarChartControl x:Name="barChart" Margin="5"></local:BarChartControl>
                 </Border>
                 <Border Style="{StaticResource GroupBorder}"  Grid.Row="1">
-                    <TabControl BorderThickness="0">
-                        <TabItem BorderThickness="0">
+                    <TabControl Style="{StaticResource TabControlStyle}">
+                        <TabItem Style="{StaticResource TabItemStyle}">
                             <TabItem.Header>
-                                <Label Content="Prietok"/>
+                                <Label Style="{StaticResource TabItemHeaderLabel}" Content="Prietok"/>
                             </TabItem.Header>                            
                             <local:LineChartControl ShowData="throughput" x:Name="throughputChart" Margin="5"></local:LineChartControl>
                         </TabItem>
-                        <TabItem BorderThickness="0" >
+                        <TabItem Style="{StaticResource TabItemStyle}">
                             <TabItem.Header>
-                                <Label Content="Teplota" />
+                                <Label Style="{StaticResource TabItemHeaderLabel}" Content="Teplota" />
                             </TabItem.Header>
                             <local:LineChartControl ShowData="temperature" x:Name="temperatureChart" Margin="5"></local:LineChartControl>
                         </TabItem>
-                        <TabItem>
+                        <TabItem Style="{StaticResource TabItemStyle}">
                             <TabItem.Header>
-                                <Label Content="Tlak" />
+                                <Label Style="{StaticResource TabItemHeaderLabel}" Content="Tlak" />
                             </TabItem.Header>
                             <local:LineChartControl ShowData="pressure" x:Name="pressureChart" Margin="5"></local:LineChartControl>
                         </TabItem>
