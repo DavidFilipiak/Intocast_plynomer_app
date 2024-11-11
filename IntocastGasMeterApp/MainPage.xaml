@@ -39,9 +39,38 @@
                 <RowDefinition></RowDefinition>
             </Grid.RowDefinitions>
 
-            <Border Style="{StaticResource GroupBorder}" Grid.Column="0" Grid.Row="0" Grid.RowSpan="2">
-                <local:BarChartControl x:Name="barChart" Margin="5"></local:BarChartControl>
-            </Border>            
+            <Grid Grid.Column="0" Grid.Row="0" Grid.RowSpan="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="5*"></RowDefinition>
+                    <RowDefinition Height="3*"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Border Style="{StaticResource GroupBorder}" Grid.Row="0">
+                    <local:BarChartControl x:Name="barChart" Margin="5"></local:BarChartControl>
+                </Border>
+                <Border Style="{StaticResource GroupBorder}"  Grid.Row="1">
+                    <TabControl BorderThickness="0">
+                        <TabItem BorderThickness="0">
+                            <TabItem.Header>
+                                <Label Content="Prietok"/>
+                            </TabItem.Header>                            
+                            <local:LineChartControl ShowData="throughput" x:Name="throughputChart" Margin="5"></local:LineChartControl>
+                        </TabItem>
+                        <TabItem BorderThickness="0" >
+                            <TabItem.Header>
+                                <Label Content="Teplota" />
+                            </TabItem.Header>
+                            <local:LineChartControl ShowData="temperature" x:Name="temperatureChart" Margin="5"></local:LineChartControl>
+                        </TabItem>
+                        <TabItem>
+                            <TabItem.Header>
+                                <Label Content="Tlak" />
+                            </TabItem.Header>
+                            <local:LineChartControl ShowData="pressure" x:Name="pressureChart" Margin="5"></local:LineChartControl>
+                        </TabItem>
+                    </TabControl>
+                </Border>
+            </Grid>
+                       
 
             <Border Grid.Column="1" Grid.Row="0" Style="{StaticResource GroupBorder}">
                 <StackPanel>
@@ -98,7 +127,7 @@ Content="{Binding Source={x:Static Properties:Settings.Default}, Path=throughput
                 <Border Grid.Row="1" Style="{StaticResource GroupBorder}">
                     <StackPanel>
                         <Label Style="{StaticResource GroupNameLabel}">Tlak</Label>
-                        <Label Style="{StaticResource ValueNameLabel}">Plynu(°C)</Label>
+                        <Label Style="{StaticResource ValueNameLabel}">Plynu</Label>
                         <Label Style="{StaticResource ValueLabel}">11000</Label>
                     </StackPanel>
                 </Border>

@@ -24,10 +24,12 @@ namespace IntocastGasMeterApp
     public partial class MainPage : Page
     {
         private ApiService api;
+        private DataService data;
 
         public MainPage()
         {
             this.api = ApiService.GetInstance();
+            this.data = DataService.GetInstance();
 
             InitializeComponent();
 
@@ -55,6 +57,23 @@ namespace IntocastGasMeterApp
         {
             double value = Properties.Settings.Default.usage_agreed_max / (24 * 12);
             barChart.addColumn((int)value);
+
+            //get random number between 0 and 10
+            Random rnd = new Random();
+            int randomThroughput = rnd.Next(0, 10);
+            int randomTemperature = rnd.Next(0, 10);
+            int randomPressure = rnd.Next(0, 10);
+
+            data.throughput.Add(new(randomThroughput));
+            data.temperature.Add(new(randomTemperature));
+            data.pressure.Add(new(randomPressure));
+
+            Console.WriteLine(randomTemperature);
+            foreach(var item in data.temperature)
+            {
+                Console.Write(item.Value);
+            }
+            Console.WriteLine();
         }
     }
 }
