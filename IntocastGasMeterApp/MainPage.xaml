@@ -45,7 +45,11 @@
                     <RowDefinition Height="3*"></RowDefinition>
                 </Grid.RowDefinitions>
                 <Border Style="{StaticResource GroupBorder}" Grid.Row="0">
-                    <local:BarChartControl x:Name="barChart" Margin="5"></local:BarChartControl>
+                    <DockPanel>
+                        <Label DockPanel.Dock="Top" Style="{StaticResource TabItemHeaderLabel}" Content="Spotreba"/>
+                        <local:BarChartControl DockPanel.Dock="Top" x:Name="barChart" Margin="5"></local:BarChartControl>
+                    </DockPanel>
+                                      
                 </Border>
                 <Border Style="{StaticResource GroupBorder}"  Grid.Row="1">
                     <TabControl Style="{StaticResource TabControlStyle}">
@@ -53,19 +57,19 @@
                             <TabItem.Header>
                                 <Label Style="{StaticResource TabItemHeaderLabel}" Content="Prietok"/>
                             </TabItem.Header>                            
-                            <local:LineChartControl ShowData="throughput" x:Name="throughputChart" Margin="5"></local:LineChartControl>
+                            <local:LineChartControl ShowData="throughput" x:Name="throughputChart"></local:LineChartControl>
                         </TabItem>
                         <TabItem Style="{StaticResource TabItemStyle}">
                             <TabItem.Header>
                                 <Label Style="{StaticResource TabItemHeaderLabel}" Content="Teplota" />
                             </TabItem.Header>
-                            <local:LineChartControl ShowData="temperature" x:Name="temperatureChart" Margin="5"></local:LineChartControl>
+                            <local:LineChartControl ShowData="temperature" x:Name="temperatureChart"></local:LineChartControl>
                         </TabItem>
                         <TabItem Style="{StaticResource TabItemStyle}">
                             <TabItem.Header>
                                 <Label Style="{StaticResource TabItemHeaderLabel}" Content="Tlak" />
                             </TabItem.Header>
-                            <local:LineChartControl ShowData="pressure" x:Name="pressureChart" Margin="5"></local:LineChartControl>
+                            <local:LineChartControl ShowData="pressure" x:Name="pressureChart"></local:LineChartControl>
                         </TabItem>
                     </TabControl>
                 </Border>
