@@ -78,7 +78,7 @@ namespace IntocastGasMeterApp
                 },
                 new ColumnSeries<ObservableValue>
                 {
-                    Values = data.accumulatedUsage,
+                    Values = data.AccumulatedUsage,
                     Fill = new SolidColorPaint(new SKColor(0, 0, 255)),
                 }
             };
@@ -123,23 +123,13 @@ namespace IntocastGasMeterApp
 
         public void addColumn(double value)
         {
-            if (data.actualUsage.Count == MAX_X)
+            if (data.ActualUsage.Count == MAX_X)
             {
                 return;
             }
-            double aggregatedValue = Sum(data.actualUsage) + value;
-            data.actualUsage.Add(new(value));
-            data.accumulatedUsage.Add(new(aggregatedValue));
-        }
-
-        private double Sum(IEnumerable<ObservableValue> values)
-        {
-            double sum = 0;
-            foreach (ObservableValue value in values)
-            {
-                sum += (double)value.Value;
-            }
-            return sum;
+            double aggregatedValue = 2 + value;
+            data.ActualUsage.Add(new(value));
+            data.AccumulatedUsage.Add(new(aggregatedValue));
         }
 
         public void SetAgreedLine(double y)

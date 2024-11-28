@@ -74,15 +74,15 @@ namespace IntocastGasMeterApp
         {
             if (String.Equals(showData, "throughput"))
             {
-                dataToShow = this.data.throughput;
+                dataToShow = this.data.Throughput;
             }
             else if (String.Equals(showData, "temperature"))
             {
-                dataToShow = this.data.temperature;
+                dataToShow = this.data.Temperature;
             }
             else if (String.Equals(showData, "pressure"))
             {
-                dataToShow = this.data.pressure;
+                dataToShow = this.data.Pressure;
             }
 
             Series = new ObservableCollection<ISeries>

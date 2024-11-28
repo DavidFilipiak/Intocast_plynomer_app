@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -27,7 +28,7 @@ namespace IntocastGasMeterApp
 
         public static readonly DependencyProperty IsMainProperty =
             DependencyProperty.Register(
-                "IsName",              // Property name
+                "IsMain",              // Property name
                 typeof(bool),            // Property type
                 typeof(AuthControl),     // Owner type
                 new PropertyMetadata(false) // Default value
@@ -53,7 +54,15 @@ namespace IntocastGasMeterApp
             string password = TextBox_password.Password;
             string username = TextBox_username.Text;
 
-            string response = this.api.Login(username, password, IsMain);
+            try
+            {
+                this.api.Login(username, password, IsMain);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
         }
     }
 }

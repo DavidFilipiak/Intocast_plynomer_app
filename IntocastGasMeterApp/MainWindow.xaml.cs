@@ -17,6 +17,8 @@ using LiveChartsCore;
 using SkiaSharp;
 using IntocastGasMeterApp.services;
 using System.Configuration;
+using IntocastGasMeterApp.models;
+using Newtonsoft.Json.Linq;
 
 
 namespace IntocastGasMeterApp
@@ -27,10 +29,11 @@ namespace IntocastGasMeterApp
     public partial class MainWindow : Window
     {
         private ApiService api;
+        private DataService data;
         public MainWindow()
         {
             this.api = ApiService.GetInstance();
-            this.api.LoginResultEvent += this.onLoginResult;
+            this.data = DataService.GetInstance();
 
             InitializeComponent();
 
@@ -39,7 +42,14 @@ namespace IntocastGasMeterApp
             Console.WriteLine(sessionId);
             if (!String.Equals(sessionId, ""))
             {
+                this.loadMasterData(true);
+                this.loadInitialDeviceData();
+                data.setCallTimer(1000 * 60);
                 navigateToMainPage();
+            }
+            else
+            {
+                this.api.LoginResultEvent += this.onLoginResult;
             }
         }
 
@@ -60,11 +70,93 @@ namespace IntocastGasMeterApp
             if (result)
             {
                 this.api.LoginResultEvent -= this.onLoginResult;
+                this.loadMasterData(false);
+                this.loadInitialDeviceData();
                 navigateToMainPage();
             }
             else
             {
                 Console.WriteLine("Login failed");
+            }
+        }
+
+        private void loadMasterData(bool retry)
+        {
+            MasterData[] masterData = []; 
+            try
+            {
+                masterData = this.api.GetMasterData(this.api.sessionId);
+
+                // get the device numbers
+                List<string> deviceNumbers = new List<string>();
+                List<string> customers = new List<string>();
+                foreach (var item in masterData)
+                {
+                    if (item.leaf)
+                    {
+                        deviceNumbers.Add(item.deviceNumber);
+                    }
+                    else
+                    {
+                        customers.Add(item.customerId);
+                    }
+                }
+                this.api.DEVICE_NUMBERS = deviceNumbers.ToArray();
+                this.api.SelectedDevice = this.api.DEVICE_NUMBERS[0];
+                this.api.CUSTOMER_ID = customers[0];
+
+                foreach (string deviceNumber in this.api.DEVICE_NUMBERS)
+                {
+                    Console.WriteLine("Adding device " + deviceNumber);
+                    Device device = new Device(deviceNumber, customers[0]);
+                    Device.devices.Add(device);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (retry)
+                {
+                    this.api.Login("", "", true);
+                    this.loadMasterData(false);
+                }
+                else
+                {
+                    Console.WriteLine("RETRY FAILED");
+                    Console.WriteLine(ex.Message);
+                }
+            }            
+        }
+
+        private void loadInitialDeviceData()
+        {
+            try
+            {
+                DateTime measureStart = data.MeasureStart;
+
+                foreach (Device device in Device.devices)
+                {
+                    // start of measurements
+                    Console.WriteLine("device: " + device.DeviceNumber);
+
+                    MeasurementsRecord[] measurements = api.GetDeviceData(api.sessionId, device.DeviceNumber, measureStart, DateTime.Now);
+
+                    foreach (var item in measurements)
+                    {
+                        device.HandleNewRecord(item);
+                    }
+                    for (int i = 0; i < device.ActualUsage.Count; i++)
+                    {
+                        Console.WriteLine(device.ActualUsage[i].ToString() + "    ;    " + device.AccumulatedUsage[i].ToString());
+                    }
+
+                    Console.WriteLine("Device: " + device.DeviceNumber + ", number of data: " + device.NumberOfRecords.ToString());
+                }                
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Source);
+                Console.WriteLine(ex.StackTrace);
+                Console.WriteLine(ex.Message);
             }
         }
     }

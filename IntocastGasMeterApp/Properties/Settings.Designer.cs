@@ -115,5 +115,17 @@ namespace IntocastGasMeterApp.Properties {
                 this["sessionId"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string customerId {
+            get {
+                return ((string)(this["customerId"]));
+            }
+            set {
+                this["customerId"] = value;
+            }
+        }
     }
 }

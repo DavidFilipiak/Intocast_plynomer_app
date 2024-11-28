@@ -13,24 +13,28 @@
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="Nastavenia" Click="ToSettings"></MenuItem>
 
-            <MenuItem Header="Api test" Click="CallApi" Height="30"></MenuItem>
-
             <MenuItem Header="stlpec" Click="AddColumn"></MenuItem>
+
+            <MenuItem Header="Login test" Click="LoginTest" Height="30"></MenuItem>
+            <MenuItem Header="Master data" Click="MasterData" Height="30"></MenuItem>
+            <MenuItem Header="Device" Click="DeviceCall" Height="30"></MenuItem>
         </Menu>
 
         <Border DockPanel.Dock="Top" BorderThickness="0,0,0,5" BorderBrush="{StaticResource PrimaryColorBrush}">
             <DockPanel LastChildFill="False" Background="{StaticResource RedGradientBrush}" Opacity="0.7">
                 <DatePicker DockPanel.Dock="Left" x:Name="DatePicker" VerticalAlignment="Center" Width="150" Height="30" Padding="5"></DatePicker>
 
-                <ComboBox DockPanel.Dock="Right" x:Name="ComboBox_GasMeter" VerticalAlignment="Center" Width="150" Height="30" Padding="5">
-                    <ComboBoxItem IsSelected="True" Content="Plynomer 1"/>
+                <ComboBox DockPanel.Dock="Right" x:Name="ComboBox_GasMeter" VerticalAlignment="Center" Width="150" Height="30" Padding="5" SelectionChanged="DeviceSelectionChanged">
+                    <ComboBoxItem Content="234610468296623"/>
+                    <ComboBoxItem Content="244610152396624"/>
+                    <ComboBoxItem Content="Spolu"/>
                 </ComboBox>
             </DockPanel>
         </Border>
 
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="3*"></ColumnDefinition>
+                <ColumnDefinition Width="4*"></ColumnDefinition>
                 <ColumnDefinition></ColumnDefinition>
                 <ColumnDefinition></ColumnDefinition>
             </Grid.ColumnDefinitions>
