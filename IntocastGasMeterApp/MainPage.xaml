@@ -12,12 +12,6 @@
     <DockPanel Margin="0">
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="Nastavenia" Click="ToSettings"></MenuItem>
-
-            <MenuItem Header="stlpec" Click="AddColumn"></MenuItem>
-
-            <MenuItem Header="Login test" Click="LoginTest" Height="30"></MenuItem>
-            <MenuItem Header="Master data" Click="MasterData" Height="30"></MenuItem>
-            <MenuItem Header="Device" Click="DeviceCall" Height="30"></MenuItem>
         </Menu>
 
         <Border DockPanel.Dock="Top" BorderThickness="0,0,0,5" BorderBrush="{StaticResource PrimaryColorBrush}">
@@ -83,40 +77,62 @@
             <Border Grid.Column="1" Grid.Row="0" Style="{StaticResource GroupBorder}">
                 <StackPanel>
                     <Label Style="{StaticResource GroupNameLabel}">Spotreba</Label>
-                    <Label Style="{StaticResource ValueNameLabel}">Dohodnuté maximum 24h</Label>
+                    <Label Style="{StaticResource ValueNameLabel}">Dohodnuté maximum 24h (Nm³)</Label>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                         <Border Style="{StaticResource LegendLine}" Background="Red"/>
                         <Label Style="{StaticResource ValueLabel}" Width="Auto" Content="{Binding Source={x:Static Properties:Settings.Default}, Path=usage_agreed_max, Mode=OneWay}"></Label>
                     </StackPanel>
-                    <Label Style="{StaticResource ValueNameLabel}">Nastavené maximum 24h</Label>
+                    <Label Style="{StaticResource ValueNameLabel}">Nastavené maximum 24h (Nm³)</Label>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                         <Border Style="{StaticResource LegendLine}" Background="#ffd700" />
                         <Label Style="{StaticResource ValueLabel}" Width="Auto" Content="{Binding Source={x:Static Properties:Settings.Default}, Path=usage_set_max, Mode=OneWay}"></Label>
-                    </StackPanel>                    
-                    <Label Style="{StaticResource ValueNameLabel}">Spotrebované</Label>
-                    <Label Style="{StaticResource ValueLabel}">11000</Label>
-                    <Label Style="{StaticResource ValueNameLabel}">Zostáva</Label>
-                    <Label Style="{StaticResource ValueLabel}">11000</Label>
+                    </StackPanel>
+                    <Label Style="{StaticResource ValueNameLabel}">Spotrebované 24h (Nm³)</Label>
+                    <Label Style="{StaticResource ValueLabel}" x:Name="Label_AccumulatedUsage" Content="{Binding AccumulatedUsageLabel}"></Label>
+                    <Label Style="{StaticResource ValueNameLabel}">Zostáva 24h (Nm³)</Label>
+                    <Label Style="{StaticResource ValueLabel}"  x:Name="Label_AccumulatedUsageDiff" Content="{Binding AccumulatedUsageDiffLabel}"></Label>
                 </StackPanel>
             </Border>
-            <GroupBox Header="Komunikácia" Grid.Column="2" Grid.Row="0" Margin="10" Background="{StaticResource ElementColorBrush}">
+            <Border Grid.Column="2" Grid.Row="0" Style="{StaticResource GroupBorder}">
                 <StackPanel>
-                    <Label FontSize="10" Margin="0" Padding="0">Status</Label>
-                    <Label BorderBrush="Black" Padding="5" BorderThickness="2" HorizontalContentAlignment="Right" HorizontalAlignment="Right" Width="100" MaxHeight="30">11000</Label>
-                    <Label FontSize="10" Margin="0" Padding="0">Posledný update</Label>
-                    <Label BorderBrush="Black" Padding="5" BorderThickness="2" HorizontalContentAlignment="Right" HorizontalAlignment="Right" Width="100" MaxHeight="30">11000</Label>
+                    <Label Style="{StaticResource GroupNameLabel}">Komunikácia</Label>
+                    <Label Style="{StaticResource ValueNameLabel}">Posledná aktualizácia údajov</Label>
+                    <Label Style="{StaticResource ValueLabel}" x:Name="Label_LastUpdate" Content="{Binding LastDataUpdate}"></Label>
+                    <Label Style="{StaticResource ValueNameLabel}">Posledná požiadavka na údaje</Label>
+                    <Label Style="{StaticResource ValueLabel}" x:Name="Label_LastCall" Content="{Binding LastCall}"></Label>
+                    <Label Style="{StaticResource ValueNameLabel}">Aktívne zariadenie</Label>
+                    <Label Style="{StaticResource ValueLabel}" Width="auto" x:Name="Label_ActiveDevice" Content="{Binding ActiveDevice}"></Label>
+
+                    <Label Style="{StaticResource ValueNameLabel}">Status</Label>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Border Style="{StaticResource Dot}" x:Name="Dot_Status" Background="{Binding StatusColor}"/>
+                        <Label Style="{StaticResource ValueLabel}" Width="auto" x:Name="Label_Status" Content="{Binding Status}"></Label>
+                    </StackPanel>
+                    <Border x:Name="Border_StatusMessage" Visibility="{Binding Visibility, ElementName=Label_StatusMessage}" Padding="3" Width="auto" MinHeight="0" Height="auto" BorderThickness="2" CornerRadius="3" BorderBrush="{Binding StatusColor}">
+                        <TextBlock x:Name="Label_StatusMessage" TextWrapping="Wrap" Text="{Binding StatusMessage}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <Trigger Property="Text" Value="">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Border>
                 </StackPanel>
-            </GroupBox>
+            </Border>
             <Border Grid.Column="1" Grid.Row="1" Style="{StaticResource GroupBorder}">
                 <StackPanel>
                     <Label Style="{StaticResource GroupNameLabel}">Prietok</Label>
-                    <Label Style="{StaticResource ValueNameLabel}">Okamžitý prietok</Label>
-                    <Label Style="{StaticResource ValueLabel}">11000</Label>
-                    <Label Style="{StaticResource ValueNameLabel}">Doporučený prietok</Label>
+                    <Label Style="{StaticResource ValueNameLabel}">Okamžitý prietok (Nm³/5 min)</Label>
+                    <Label Style="{StaticResource ValueLabel}" x:Name="Label_Throughput" Content="{Binding ThroughputLabel}"></Label>
+                    <Label Style="{StaticResource ValueNameLabel}">Doporučený prietok (Nm³/5 min)</Label>
                     <Label Style="{StaticResource ValueLabel}"
 Content="{Binding Source={x:Static Properties:Settings.Default}, Path=throughput_agreed, Mode=OneWay}"></Label>
-                    <Label Style="{StaticResource ValueNameLabel}">Rozdiel</Label>
-                    <Label Style="{StaticResource ValueLabel}" x:Name="Label_ThroughputDiff">11000</Label>
+                    <Label Style="{StaticResource ValueNameLabel}">Rozdiel (Nm³/5 min)</Label>
+                    <Label Style="{StaticResource ValueLabel}" x:Name="Label_ThroughputDiff" Content="{Binding ThroughputDiffLabel}"></Label>
                 </StackPanel>
             </Border>            
             <Grid Grid.Column="2" Grid.Row="1">
@@ -128,15 +144,15 @@ Content="{Binding Source={x:Static Properties:Settings.Default}, Path=throughput
                 <Border Grid.Row="0" Style="{StaticResource GroupBorder}">
                     <StackPanel>
                         <Label Style="{StaticResource GroupNameLabel}">Teplota</Label>
-                        <Label Style="{StaticResource ValueNameLabel}">Plynu(°C)</Label>
-                        <Label Style="{StaticResource ValueLabel}">11000</Label>
+                        <Label Style="{StaticResource ValueNameLabel}">Plynu (°C)</Label>
+                        <Label Style="{StaticResource ValueLabel}" x:Name="Label_Temperature" Content="{Binding TemperatureLabel}"></Label>
                     </StackPanel>
                 </Border>
                 <Border Grid.Row="1" Style="{StaticResource GroupBorder}">
                     <StackPanel>
                         <Label Style="{StaticResource GroupNameLabel}">Tlak</Label>
-                        <Label Style="{StaticResource ValueNameLabel}">Plynu</Label>
-                        <Label Style="{StaticResource ValueLabel}">11000</Label>
+                        <Label Style="{StaticResource ValueNameLabel}">Plynu (kPa)</Label>
+                        <Label Style="{StaticResource ValueLabel}" x:Name="Label_Pressure" Content="{Binding PressureLabel}"></Label>
                     </StackPanel>
                 </Border>
             </Grid>

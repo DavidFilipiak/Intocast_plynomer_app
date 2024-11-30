@@ -3,14 +3,20 @@ using LiveChartsCore.Defaults;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Drawing;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Security.Permissions;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
+using System.Windows;
+using System.Windows.Media;
 
 namespace IntocastGasMeterApp.services
 {
-    class DataService
+    class DataService: INotifyPropertyChanged
     {
 
         private static DataService instance = null;
@@ -20,11 +26,47 @@ namespace IntocastGasMeterApp.services
         // these values are displayed in the bar chart and line charts
         public readonly ObservableCollection<ObservableValue> AccumulatedUsage;
         public readonly ObservableCollection<ObservableValue> ActualUsage;
-        public readonly ObservableCollection<ObservableValue> Throughput;
         public readonly ObservableCollection<ObservableValue> Temperature;
         public readonly ObservableCollection<ObservableValue> Pressure;
+        public readonly ObservableCollection<ObservableValue> Throughput;
 
         public readonly ObservableCollection<DateTime> measuredTimes;
+
+        public DateTime MeasureStart { get; set; }
+
+        // dynamic output label variables
+        private string _accumulatedUsageLabel;
+        private string _accumulatedUsageDiffLabel;
+        private string _temperatureLabel;
+        private string _pressureLabel;
+        private string _throughputLabel;
+        private string _throughputDiffLabel;
+        private string _pressureDiffLabel;
+        private string _temperatureDiffLabel;
+
+        public string AccumulatedUsageLabel { get => _accumulatedUsageLabel; set { _accumulatedUsageLabel = value; OnPropertyChanged(); } }
+        public string AccumulatedUsageDiffLabel { get => _accumulatedUsageDiffLabel; set { _accumulatedUsageDiffLabel = value; OnPropertyChanged(); } }
+        public string TemperatureLabel { get => _temperatureLabel; set { _temperatureLabel = value; OnPropertyChanged(); } }
+        public string PressureLabel { get => _pressureLabel; set { _pressureLabel = value; OnPropertyChanged(); } }
+        public string ThroughputLabel { get => _throughputLabel; set { _throughputLabel = value; OnPropertyChanged(); } }
+        public string ThroughputDiffLabel { get => _throughputDiffLabel; set { _throughputDiffLabel = value; OnPropertyChanged(); } }
+
+
+        // commnunication fields and properties
+        private string _activeDevice;
+        private string _lastCall;
+        private string _lastDataUpdate;
+
+        private string _status;
+        private string _statusMessage;
+        private System.Windows.Media.Brush _statusColor;
+
+        public string ActiveDevice { get => _activeDevice; set { _activeDevice = value; OnPropertyChanged(); } }
+        public string LastCall { get => _lastCall; set { _lastCall = value; OnPropertyChanged(); } }
+        public string LastDataUpdate { get => _lastDataUpdate; set { _lastDataUpdate = value; OnPropertyChanged(); } }
+        public string Status { get => _status; set { _status = value; OnPropertyChanged(); } }
+        public string StatusMessage { get => _statusMessage; set { _statusMessage = value; OnPropertyChanged(); } }
+        public System.Windows.Media.Brush StatusColor { get => _statusColor; set { _statusColor = value; OnPropertyChanged(); } }
 
         private DataService()
         {
@@ -33,11 +75,22 @@ namespace IntocastGasMeterApp.services
 
             this.AccumulatedUsage = new ObservableCollection<ObservableValue>();
             this.ActualUsage = new ObservableCollection<ObservableValue>();
-            this.Throughput = new ObservableCollection<ObservableValue>();
             this.Temperature = new ObservableCollection<ObservableValue>();
             this.Pressure = new ObservableCollection<ObservableValue>();
+            this.Throughput = new ObservableCollection<ObservableValue>();
 
             this.measuredTimes = new ObservableCollection<DateTime>();
+
+            string measuementStart = Properties.Settings.Default.measure_start;
+            int hours = Int32.Parse(measuementStart.Split(':')[0]);
+            int day = DateTime.Now.Day;
+            if (DateTime.Now.Hour < hours)
+            {
+                day = DateTime.Now.AddDays(-1).Day;
+            }
+            DateTime measureStart = new DateTime(DateTime.Now.Year, DateTime.Now.Month, day, hours, Int32.Parse(measuementStart.Split(':')[1]), 0);
+            this.MeasureStart = measureStart;
+            MeasureStart = MeasureStart.AddHours(-48);
         }
 
         public static DataService GetInstance()
@@ -49,6 +102,42 @@ namespace IntocastGasMeterApp.services
             return instance;
         }
 
+        public void UpdateLabels()
+        {
+            Device device = GetCorrectDevice();
+            DateTime lastUpdateSlot = device.LastRealDataUpdateSlot;
+            double AgreedUsage = Properties.Settings.Default.usage_agreed_max;
+            double agreedThroughput = Properties.Settings.Default.throughput_agreed;
+            MeasurementsRecord lastRecord;
+            bool dateTimeExists = device.Slots.TryGetValue(lastUpdateSlot, out lastRecord);
+            if (dateTimeExists && lastRecord is not null)
+            {
+                AccumulatedUsageLabel = Math.Round(lastRecord.AccumulatedUsage, 2).ToString();
+                AccumulatedUsageDiffLabel = Math.Round(AgreedUsage - lastRecord.AccumulatedUsage, 2).ToString();
+                TemperatureLabel = Math.Round(lastRecord.Temperature, 2).ToString();
+                PressureLabel = Math.Round(lastRecord.Pressure, 2).ToString();
+                ThroughputLabel = Math.Round(lastRecord.ActualUsage, 2).ToString();
+                ThroughputDiffLabel = Math.Round(agreedThroughput - lastRecord.ActualUsage, 2).ToString();
+            }
+            else
+            {
+                AccumulatedUsageLabel = "0";
+                AccumulatedUsageDiffLabel = AgreedUsage.ToString();
+                TemperatureLabel = "-";
+                PressureLabel = "-";
+                ThroughputLabel = "-";
+                ThroughputDiffLabel = agreedThroughput.ToString();
+            }
+            
+
+            DateTime lastUpdateTime = device.LastRealDataUpdate;
+            LastDataUpdate = device.LastRealDataUpdate.ToString("HH:mm");
+            LastCall = device.LastDataQuery.ToString("HH:mm");
+
+            // assuming only one device can be active at a time
+            if (device.IsActive) ActiveDevice = device.DeviceNumber;
+        }
+
         public void UpdateBarChartData()
         {
             Device device = GetCorrectDevice();
@@ -56,12 +145,10 @@ namespace IntocastGasMeterApp.services
             for (int i = 0; i < AccumulatedUsage.Count; i++)
             {
                 AccumulatedUsage[i].Value = device.AccumulatedUsage[i];
-                ActualUsage[i].Value = device.ActualUsage[i];
             }
             for (int i = AccumulatedUsage.Count; i < device.NumberOfRecords; i++)
             {
                 AccumulatedUsage.Add(new ObservableValue(device.AccumulatedUsage[i]));
-                ActualUsage.Add(new ObservableValue(device.ActualUsage[i]));
             }
         }
 
@@ -73,14 +160,25 @@ namespace IntocastGasMeterApp.services
             {
                 Temperature[i].Value = device.Temperature[i];
                 Pressure[i].Value = device.Pressure[i];
-                //Throughput[i].Value = device.Throughput[i].Value;
+                ActualUsage[i].Value = device.ActualUsage[i];
+                Throughput[i].Value = device.Throughput[i];
             }
             for (int i = Temperature.Count; i < device.NumberOfRecords; i++)
             {
                 Temperature.Add(new ObservableValue(device.Temperature[i]));
                 Pressure.Add(new ObservableValue(device.Pressure[i]));
-                //Throughput.Add(new ObservableValue(device.Throughput[i].Value));
+                ActualUsage.Add(new ObservableValue(device.ActualUsage[i]));
+                Throughput.Add(new ObservableValue(device.Throughput[i]));
             }
+        }
+
+        public void ClearDataLists()
+        {
+            Temperature.Clear();
+            Pressure.Clear();
+            ActualUsage.Clear();
+            Throughput.Clear();
+            AccumulatedUsage.Clear();
         }
 
         private Device GetCorrectDevice()
@@ -93,16 +191,6 @@ namespace IntocastGasMeterApp.services
             else
             {
                 return Device.Combine(Device.devices.ToArray());
-            }
-        }
-
-        public DateTime MeasureStart
-        {
-            get
-            {
-                string measuementStart = Properties.Settings.Default.measure_start;
-                DateTime measureStart = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, Int32.Parse(measuementStart.Split(':')[0]), Int32.Parse(measuementStart.Split(':')[1]), 0);
-                return measureStart;
             }
         }
 
@@ -121,25 +209,68 @@ namespace IntocastGasMeterApp.services
             Console.WriteLine("Timer: " + DateTime.Now.ToString());
             try
             {
+                DateTime now = DateTime.Now;
+                if (now > MeasureStart.AddHours(24))
+                {
+                    ClearDataLists();
+                    foreach (Device device in Device.devices)
+                    {
+                        device.ResetDevice();
+                    }
+                    MeasureStart = MeasureStart.AddHours(24);
+                }
+
                 foreach (Device device in Device.devices)
                 {
                     Console.WriteLine($"Fetching data for device: {device.DeviceNumber}");
+
                     // start of measurement
                     MeasurementsRecord[] measurements = [];
-                    measurements = api.GetDeviceData(api.sessionId, device.DeviceNumber, DateTime.Now.AddMinutes(-5), DateTime.Now);
+                    measurements = api.GetDeviceData(api.sessionId, device.DeviceNumber, now.AddMinutes(-5), now);
 
+                    if (now >= device.LastDataUpdateSlot.AddMinutes(10))
+                    {
+                        device.LastDataUpdateSlot = device.LastDataUpdateSlot.AddMinutes(5);
+                        if (device.IsActive)
+                        {
+                            UpdateStatus("Chýbajúce dáta", "Za posledných 10 minút neprišli žiadne nové dáta. Zobrazené údaje nemusia byť aktuálne.", Colors.Orange);
+                        }
+                    }
+
+                    device.LastDataQuery = new DateTime(now.Ticks);
                     foreach (var item in measurements)
                     {
-                        device.HandleNewRecord(item);
-                        this.UpdateBarChartData();
-                        this.UpdateLineChartData();
-                    }
+                        device.HandleNewRecord(item);                        
+                    }                    
                 }
+
+                this.UpdateBarChartData();
+                this.UpdateLineChartData();
+                this.UpdateLabels();
+
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+                UpdateStatus("Chyba", ex.Message, Colors.Red);
             }
+        }
+
+        public void UpdateStatus(string status, string message, System.Windows.Media.Color color)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                // Code to update the UI
+                Status = status;
+                StatusMessage = message;
+                StatusColor = new SolidColorBrush(color);
+            });
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

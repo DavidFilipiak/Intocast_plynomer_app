@@ -19,6 +19,7 @@ using IntocastGasMeterApp.services;
 using System.Configuration;
 using IntocastGasMeterApp.models;
 using Newtonsoft.Json.Linq;
+using System.Timers;
 
 
 namespace IntocastGasMeterApp
@@ -39,12 +40,14 @@ namespace IntocastGasMeterApp
 
             string sessionId = api.sessionId;
 
-            Console.WriteLine(sessionId);
+            
             if (!String.Equals(sessionId, ""))
             {
+                Console.WriteLine("Loading data");
                 this.loadMasterData(true);
-                this.loadInitialDeviceData();
-                data.setCallTimer(1000 * 60);
+                //this.loadInitialDeviceData();
+                //data.setCallTimer(1000 * 60);
+                this.TestLoadData();
                 navigateToMainPage();
             }
             else
@@ -71,7 +74,9 @@ namespace IntocastGasMeterApp
             {
                 this.api.LoginResultEvent -= this.onLoginResult;
                 this.loadMasterData(false);
-                this.loadInitialDeviceData();
+                //this.loadInitialDeviceData();
+                this.TestLoadData();
+                //data.setCallTimer(1000 * 60);
                 navigateToMainPage();
             }
             else
@@ -123,6 +128,8 @@ namespace IntocastGasMeterApp
                 {
                     Console.WriteLine("RETRY FAILED");
                     Console.WriteLine(ex.Message);
+
+                    data.UpdateStatus("Chyba", "Kontaktuje developera s touto chybou: " + ex.Message, Colors.Crimson);
                 }
             }            
         }
@@ -144,10 +151,15 @@ namespace IntocastGasMeterApp
                     {
                         device.HandleNewRecord(item);
                     }
-                    for (int i = 0; i < device.ActualUsage.Count; i++)
+
+                    // add possible empty slots
+                    for (DateTime time = device.LastDataUpdateSlot.AddMinutes(5); time < DateTime.Now.AddMinutes(-5); time = time.AddMinutes(5))
                     {
-                        Console.WriteLine(device.ActualUsage[i].ToString() + "    ;    " + device.AccumulatedUsage[i].ToString());
+                        device.LastDataUpdateSlot = time;
+                        data.UpdateStatus("Chýbajúce dáta", "Za posledných 10 minút neprišli žiadne nové dáta. Zobrazené údaje nemusia byť aktuálne.", Colors.Orange);
                     }
+
+                    device.LastDataQuery = DateTime.Now;
 
                     Console.WriteLine("Device: " + device.DeviceNumber + ", number of data: " + device.NumberOfRecords.ToString());
                 }                
@@ -157,6 +169,109 @@ namespace IntocastGasMeterApp
                 Console.WriteLine(ex.Source);
                 Console.WriteLine(ex.StackTrace);
                 Console.WriteLine(ex.Message);
+
+                data.UpdateStatus("Chyba", "Kontaktuje developera s touto chybou: " + ex.Message, Colors.Crimson);
+            }
+        }
+
+        private int MinuteOffset { get; set; }
+        private void TestLoadData()
+        {
+            MinuteOffset = 60*6;  //23 hours
+
+            try
+            {
+                DateTime start = data.MeasureStart;
+                DateTime now = start.AddMinutes(MinuteOffset);
+
+                foreach (Device device in Device.devices)
+                {
+                    MeasurementsRecord[] measurements = api.GetDeviceData(api.sessionId, device.DeviceNumber, start, now);
+
+                    foreach (var item in measurements)
+                    {
+                        device.HandleNewRecord(item);
+                    }
+
+                    // add possible empty slots
+                    for (DateTime time = device.LastDataUpdateSlot.AddMinutes(5); time < now.AddMinutes(-5); time = time.AddMinutes(5))
+                    {
+                        device.LastDataUpdateSlot = time;
+                        data.UpdateStatus("Chýbajúce dáta", "Za posledných 10 minút neprišli žiadne nové dáta. Zobrazené údaje nemusia byť aktuálne.", Colors.Orange);
+                    }
+
+                    device.LastDataQuery = now;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Source);
+                Console.WriteLine(ex.StackTrace);
+                Console.WriteLine(ex.Message);
+
+                data.UpdateStatus("Chyba", "Kontaktuje developera s touto chybou: " + ex.Message, Colors.Crimson);
+            }
+
+            System.Timers.Timer timer = new System.Timers.Timer();
+            timer.Interval = 5000;
+            timer.Elapsed += OnTimedEvent;
+            timer.AutoReset = true;
+            timer.Enabled = true;
+            timer.Start();
+        }
+        private void OnTimedEvent(object source, ElapsedEventArgs e)
+        {
+            try
+            {                
+                DateTime start = data.MeasureStart;
+
+                DateTime now = start.AddMinutes(MinuteOffset);
+                Console.WriteLine(start.ToString("dd.MM HH:mm") + "   " + now.ToString("dd.MM HH:mm"));
+                
+                if (now > data.MeasureStart.AddHours(24))
+                {
+                    data.ClearDataLists();
+                    foreach (Device device in Device.devices)
+                    {
+                        device.ResetDevice();
+                    }
+                    data.MeasureStart = data.MeasureStart.AddHours(24);
+                    MinuteOffset = 0;
+                }
+
+                foreach (Device device in Device.devices)
+                {
+                    Console.WriteLine($"Fetching data for device: {device.DeviceNumber}");
+                    // start of measurement
+                    MeasurementsRecord[] measurements = [];
+
+                    measurements = api.GetDeviceData(api.sessionId, device.DeviceNumber, now.AddMinutes(-5), now);
+                    Console.WriteLine($"Fetched {measurements.Length} records");
+                    if (now > device.LastDataUpdateSlot.AddMinutes(10))
+                    {
+                        device.LastDataUpdateSlot = device.LastDataUpdateSlot.AddMinutes(5);
+                        if (device.IsActive)
+                        {
+                            data.UpdateStatus("Chýbajúce dáta", "Za posledných 10 minút neprišli žiadne nové dáta. Zobrazené údaje nemusia byť aktuálne.", Colors.Orange);
+                        }
+                    }
+                    device.LastDataQuery = new DateTime(now.Ticks);
+                    foreach (var item in measurements)
+                    {
+                        device.HandleNewRecord(item);
+                    }                   
+
+                    MinuteOffset += 1;
+                }
+
+                data.UpdateBarChartData();
+                data.UpdateLineChartData();
+                data.UpdateLabels();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                data.UpdateStatus("Chyba", "Kontaktuje developera s touto chybou: " + ex.Message, Colors.Crimson);
             }
         }
     }

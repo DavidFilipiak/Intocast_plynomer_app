@@ -224,18 +224,13 @@ namespace IntocastGasMeterApp.services
                 false
             );
 
-            this.LastCall = DateTime.Now;
-
             HttpResponseMessage response = this.client.GetAsync("GetCsvReport.rails" + queryString).Result;
-            Console.WriteLine(response);
+            //Console.WriteLine(response);
             if (response.IsSuccessStatusCode)
             {
                 string responseString = response.Content.ReadAsStringAsync().Result;
-                Console.WriteLine(responseString);
+                //Console.WriteLine(responseString);
                 MeasurementsRecord[] records = Utils.parseCSVMeasurements(responseString, ";");
-
-                this.LastSuccessCall = DateTime.Now;
-                this.Status = true;
 
                 return records;
             }
@@ -244,9 +239,6 @@ namespace IntocastGasMeterApp.services
                 string responseString = response.Content.ReadAsStringAsync().Result;
                 Console.WriteLine(responseString);
                 dynamic errorData = JsonConvert.DeserializeObject(responseString);
-
-                this.LastError = errorData.message;
-                this.Status = false;
 
                 throw new HttpIOException(errorData.message);
             }            

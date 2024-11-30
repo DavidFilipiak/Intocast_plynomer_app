@@ -20,6 +20,9 @@ using SkiaSharp;
 using LiveChartsCore.Defaults;
 using LiveChartsCore.SkiaSharpView;
 using System.Collections.Specialized;
+using LiveChartsCore.ConditionalDraw;
+using IntocastGasMeterApp.models;
+using System.Windows.Ink;
 
 namespace IntocastGasMeterApp
 {
@@ -29,6 +32,7 @@ namespace IntocastGasMeterApp
     public partial class LineChartControl : UserControl
     {
         private DataService data;
+        private ApiService api;
         private const int MAX_X = 24 * 12;
         private string[] xLabels = new string[MAX_X];
 
@@ -51,6 +55,7 @@ namespace IntocastGasMeterApp
         public LineChartControl()
         {
             this.data = DataService.GetInstance();
+            this.api = ApiService.GetInstance();
             this.measureStart = Properties.Settings.Default.measure_start;
 
             InitializeComponent();

@@ -24,6 +24,9 @@ using System.Collections.Immutable;
 using CommunityToolkit.Mvvm.Input;
 using System.Printing;
 using IntocastGasMeterApp.services;
+using IntocastGasMeterApp.models;
+using LiveChartsCore.Kernel;
+using LiveChartsCore.ConditionalDraw;
 
 namespace IntocastGasMeterApp
 {
@@ -40,10 +43,12 @@ namespace IntocastGasMeterApp
         private readonly string measureStart = "00:00";
 
         private DataService data;
+        private ApiService api;
 
         public BarChartControl()
         {
             this.data = DataService.GetInstance();
+            this.api = ApiService.GetInstance();
             this.measureStart = Properties.Settings.Default.measure_start;
 
             InitializeComponent();
@@ -80,7 +85,17 @@ namespace IntocastGasMeterApp
                 {
                     Values = data.AccumulatedUsage,
                     Fill = new SolidColorPaint(new SKColor(0, 0, 255)),
-                }
+                }.OnPointMeasured(point =>
+                {
+                    if (point.Visual is null) return;
+                    int index = point.Index;
+                    Device selectedDevice = Device.Get(api.SelectedDevice);
+                    if (selectedDevice.Slots.Values.ElementAt(index) is null)
+                    {
+                        point.Visual.Fill = new SolidColorPaint(new SKColor(84, 84, 84));
+                    }
+
+                })
             };
 
             XAxes[0].Labeler = XAxisLabeler;
@@ -113,11 +128,25 @@ namespace IntocastGasMeterApp
         
         private string XAxisLabeler(double value)
         {
+            /*Device selectedDevice = Device.Get(api.SelectedDevice);
+            int index = (int)value;
+            (DateTime time, MeasurementsRecord record) = selectedDevice.Slots.ElementAt(index);
+            if (record is null)
+            {
+                return time.ToString("HH:mm");
+            }
+            else
+            {
+                return record.Date.ToString("HH:mm");
+            }*/
+
             int measureStartHours = Int32.Parse(measureStart.Substring(0, 2));
             value += measureStartHours * 12;
             int minutes = ((int)value % 12) * 5;
             int hours = value >= 24 * 12 ? (int)(value - 24 * 12) / 12 : (int)value / 12;
             string minutesString = minutes < 10 ? "0" + minutes.ToString() : minutes.ToString();
+
+
             return hours.ToString() + ":" + minutesString;
         }
 
