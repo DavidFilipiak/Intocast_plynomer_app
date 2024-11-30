@@ -38,21 +38,12 @@ namespace IntocastGasMeterApp
 
             InitializeComponent();
 
-            string sessionId = api.sessionId;
+            string sessionId = api.SessionId;
+            this.api.AuthResultEvent += this.onLoginResult;
 
-            
             if (!String.Equals(sessionId, ""))
             {
-                Console.WriteLine("Loading data");
-                this.loadMasterData(true);
-                //this.loadInitialDeviceData();
-                //data.setCallTimer(1000 * 60);
-                this.TestLoadData();
-                navigateToMainPage();
-            }
-            else
-            {
-                this.api.LoginResultEvent += this.onLoginResult;
+                this.api.Login(false);
             }
         }
 
@@ -68,20 +59,32 @@ namespace IntocastGasMeterApp
             MainFrame.Navigate(new SettingsPage());
         }
 
-        private void onLoginResult(object sender, bool result)
+        private void onLoginResult(object sender, LoginStatus result)
         {
-            if (result)
+            if (result is LoginStatus.LOGIN_SUCCESS)
             {
-                this.api.LoginResultEvent -= this.onLoginResult;
                 this.loadMasterData(false);
-                //this.loadInitialDeviceData();
-                this.TestLoadData();
-                //data.setCallTimer(1000 * 60);
+                this.loadInitialDeviceData();
+                //this.TestLoadData();
+                data.SetCallTimer(1000 * 60);
                 navigateToMainPage();
             }
-            else
+            else if (result is LoginStatus.LOGIN_FAILURE)
             {
                 Console.WriteLine("Login failed");
+            }
+            else if (result is LoginStatus.LOGOUT_SUCCESS)
+            {
+                Console.WriteLine("Logout success");
+                AuthContent.Visibility = Visibility.Visible;
+                MainFrame.Visibility = Visibility.Hidden;
+                data.StopCallTimer();
+                api.clearSession();
+                data.ClearDataLists();
+                foreach (Device device in Device.devices)
+                {
+                    device.ResetDevice();
+                }
             }
         }
 
@@ -90,7 +93,7 @@ namespace IntocastGasMeterApp
             MasterData[] masterData = []; 
             try
             {
-                masterData = this.api.GetMasterData(this.api.sessionId);
+                masterData = this.api.GetMasterData(this.api.SessionId);
 
                 // get the device numbers
                 List<string> deviceNumbers = new List<string>();
@@ -121,7 +124,7 @@ namespace IntocastGasMeterApp
             {
                 if (retry)
                 {
-                    this.api.Login("", "", true);
+                    this.api.Login(false);
                     this.loadMasterData(false);
                 }
                 else
@@ -145,7 +148,7 @@ namespace IntocastGasMeterApp
                     // start of measurements
                     Console.WriteLine("device: " + device.DeviceNumber);
 
-                    MeasurementsRecord[] measurements = api.GetDeviceData(api.sessionId, device.DeviceNumber, measureStart, DateTime.Now);
+                    MeasurementsRecord[] measurements = api.GetDeviceData(api.SessionId, device.DeviceNumber, measureStart, DateTime.Now);
 
                     foreach (var item in measurements)
                     {
@@ -156,7 +159,10 @@ namespace IntocastGasMeterApp
                     for (DateTime time = device.LastDataUpdateSlot.AddMinutes(5); time < DateTime.Now.AddMinutes(-5); time = time.AddMinutes(5))
                     {
                         device.LastDataUpdateSlot = time;
-                        data.UpdateStatus("Chýbajúce dáta", "Za posledných 10 minút neprišli žiadne nové dáta. Zobrazené údaje nemusia byť aktuálne.", Colors.Orange);
+                        if (device.IsActive)
+                        {
+                            data.UpdateStatus("Chýbajúce dáta", "Za posledných 10 minút neprišli žiadne nové dáta. Zobrazené údaje nemusia byť aktuálne.", Colors.Orange);
+                        }
                     }
 
                     device.LastDataQuery = DateTime.Now;
@@ -186,7 +192,7 @@ namespace IntocastGasMeterApp
 
                 foreach (Device device in Device.devices)
                 {
-                    MeasurementsRecord[] measurements = api.GetDeviceData(api.sessionId, device.DeviceNumber, start, now);
+                    MeasurementsRecord[] measurements = api.GetDeviceData(api.SessionId, device.DeviceNumber, start, now);
 
                     foreach (var item in measurements)
                     {
@@ -245,7 +251,7 @@ namespace IntocastGasMeterApp
                     // start of measurement
                     MeasurementsRecord[] measurements = [];
 
-                    measurements = api.GetDeviceData(api.sessionId, device.DeviceNumber, now.AddMinutes(-5), now);
+                    measurements = api.GetDeviceData(api.SessionId, device.DeviceNumber, now.AddMinutes(-5), now);
                     Console.WriteLine($"Fetched {measurements.Length} records");
                     if (now > device.LastDataUpdateSlot.AddMinutes(10))
                     {

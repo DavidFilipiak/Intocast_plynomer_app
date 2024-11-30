@@ -26,8 +26,14 @@
     <Setting Name="sessionId" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="customerId" Type="System.String" Scope="User">
+    <Setting Name="username" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="password" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="key" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">CFefvDqM1SESOiF9JMSfbW7qGaCKdUgC</Value>
     </Setting>
   </Settings>
 </SettingsFile>

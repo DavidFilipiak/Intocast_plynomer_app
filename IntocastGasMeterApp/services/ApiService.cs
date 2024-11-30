@@ -11,6 +11,15 @@ using IntocastGasMeterApp.models;
 
 namespace IntocastGasMeterApp.services
 {
+    internal enum LoginStatus
+    {
+        LOGIN_SUCCESS,
+        LOGIN_FAILURE,
+        LOGIN_CHECK_SUCCESS,
+        LOGOUT_SUCCESS,
+        LOGOUT_FAILURE
+    }
+
     internal class ApiService
     {
         private const string SPP_API_URL = "https://gasapi.spp-distribucia.sk/Website/sppdapi/";
@@ -20,12 +29,7 @@ namespace IntocastGasMeterApp.services
 
         public string SelectedDevice { get; set; }
 
-        public bool Status { get; set; } // true if last call was successful
-        public DateTime LastCall { get; set; }
-        public DateTime LastSuccessCall { get; set; }
-        public string LastError { get; set; }
-
-        public string sessionId
+        public string SessionId
         {
             get {
                 return this._sessionId;
@@ -36,7 +40,7 @@ namespace IntocastGasMeterApp.services
             }
         }
 
-        public event EventHandler<bool> LoginResultEvent;
+        public event EventHandler<LoginStatus> AuthResultEvent;
         
 
         private readonly HttpClient client;
@@ -44,11 +48,12 @@ namespace IntocastGasMeterApp.services
         private ApiService()
         {
             this.client = new HttpClient();
-            //this.client.BaseAddress = new Uri("http://calapi.inadiutorium.cz/api/v0/en/");
             this.client.BaseAddress = new Uri(SPP_API_URL);
-            this.sessionId = Properties.Settings.Default.sessionId;
+
+            this.SessionId = Properties.Settings.Default.sessionId;
+            //this.SessionId = "";
             this.SelectedDevice = "Spolu";
-            Console.WriteLine(this.sessionId);
+            Console.WriteLine(this.SessionId);
         }
 
         // singleton service
@@ -83,24 +88,55 @@ namespace IntocastGasMeterApp.services
             return "?" + sb.ToString();
         }
 
-        public string Test()
+        public void clearSession()
         {
-            Console.WriteLine("Calling test api");
-
-            HttpResponseMessage response = this.client.GetAsync("calendars").Result;
-            Console.WriteLine("received result from test api");
-            if (response.IsSuccessStatusCode)
-            {
-                return response.Content.ReadAsStringAsync().Result;
-            }
-            else
-            {
-                return "Error";
-            }
+            this.SessionId = String.Empty;
+            Properties.Settings.Default.sessionId = this.SessionId;
+            Properties.Settings.Default.username = "";
+            Properties.Settings.Default.password = "";
+            Properties.Settings.Default.Save();
         }
 
-        public void Login(string username, string password, bool saveSessionId)
+        public bool CheckLogin(string username, string password)
         {
+            string savedUsername = Utils.Decrypt(Properties.Settings.Default.username);
+            string savedPassword = Utils.Decrypt(Properties.Settings.Default.password);
+
+            return username == savedUsername && password == savedPassword;
+        }
+
+        public void Login(bool saveSession)
+        {
+            string username = Utils.Decrypt(Properties.Settings.Default.username);
+            string password = Utils.Decrypt(Properties.Settings.Default.password);
+            this.Login(username, password, true, saveSession);
+        }
+
+        public void Login(string username, string password, bool isMain)
+        {
+            this.Login(username, password, isMain, isMain);
+        }
+
+        public void Login(string username, string password, bool isMain, bool saveSession)
+        {
+            if (!isMain)
+            {
+                bool loginCheck = this.CheckLogin(username, password);
+                if (loginCheck)
+                {
+                    AuthResultEvent?.Invoke(this, LoginStatus.LOGIN_CHECK_SUCCESS);
+                }
+                else
+                {
+                    AuthResultEvent?.Invoke(this, LoginStatus.LOGIN_FAILURE);
+                    throw new Exception("Nesprávne meno alebo heslo.");
+                }
+
+                return;
+            }
+
+            Console.WriteLine(username + "; " + password + "; " + saveSession);
+
             string queryString = this.BuildQueryString(
                 new Dictionary<string, string> 
                 { 
@@ -110,8 +146,6 @@ namespace IntocastGasMeterApp.services
                 true
             );
 
-            this.LastCall = DateTime.Now;
-
             HttpResponseMessage response = this.client.PostAsync("logon.rails" + queryString, null).Result;
             Console.WriteLine(response);
             if (response.IsSuccessStatusCode)
@@ -119,15 +153,17 @@ namespace IntocastGasMeterApp.services
                 string responseString = response.Content.ReadAsStringAsync().Result;
                 dynamic responseJson = JsonConvert.DeserializeObject(responseString);
                 Console.WriteLine(responseJson);
-                this.sessionId = responseJson.sessionId;
-                Properties.Settings.Default.sessionId = this.sessionId;
+                this.SessionId = responseJson.sessionId;
+                Properties.Settings.Default.sessionId = this.SessionId;
 
-                if (saveSessionId) Properties.Settings.Default.Save();
+                if ((bool)saveSession)
+                {
+                    Properties.Settings.Default.username = Utils.Encrypt(username);
+                    Properties.Settings.Default.password = Utils.Encrypt(password);
+                    Properties.Settings.Default.Save();
+                }
 
-                this.LastSuccessCall = DateTime.Now;
-                this.Status = true;
-
-                LoginResultEvent?.Invoke(this, true);
+                AuthResultEvent?.Invoke(this, LoginStatus.LOGIN_SUCCESS);
             }
             else
             {
@@ -136,16 +172,15 @@ namespace IntocastGasMeterApp.services
                 Console.WriteLine(responseString);
                 dynamic errorData = JsonConvert.DeserializeObject(responseString);
 
-                this.LastError = errorData.message;
-                this.Status = false;
-
-                LoginResultEvent?.Invoke(this, false);
-                throw new HttpIOException(errorData.message);
+                AuthResultEvent?.Invoke(this, LoginStatus.LOGIN_FAILURE);
+                throw new Exception(errorData.message.ToString());
             }
         }
 
-        public string Logout(string sessionId)
+        public void Logout()
         {
+            string sessionId = this.SessionId;
+
             string queryString = this.BuildQueryString(
                 new Dictionary<string, string>
                 {
@@ -159,15 +194,17 @@ namespace IntocastGasMeterApp.services
             {
                 string responseString = response.Content.ReadAsStringAsync().Result;
                 dynamic responseJson = JsonConvert.DeserializeObject(responseString);
-                if (responseJson.success)
-                {
-                    return "Success";
-                }
-                return "Failure";
+
+                AuthResultEvent?.Invoke(this, LoginStatus.LOGOUT_SUCCESS);
             }
             else
             {
-                return "Error";
+                string responseString = response.Content.ReadAsStringAsync().Result;
+                Console.WriteLine(responseString);
+                dynamic errorData = JsonConvert.DeserializeObject(responseString);
+
+                AuthResultEvent?.Invoke(this, LoginStatus.LOGOUT_FAILURE);
+                throw new Exception(errorData.message.ToString());
             }
         }
 
@@ -181,8 +218,6 @@ namespace IntocastGasMeterApp.services
                 false
             );
 
-            this.LastCall = DateTime.Now;
-
             HttpResponseMessage response = this.client.GetAsync("GetMasterData.rails" + queryString).Result;
             Console.WriteLine(response);
             if (response.IsSuccessStatusCode)
@@ -191,9 +226,6 @@ namespace IntocastGasMeterApp.services
                 Console.WriteLine(JsonConvert.DeserializeObject(responseString));
                 MasterData[] responseData = JsonConvert.DeserializeObject<MasterData[]>(responseString);
 
-                this.LastSuccessCall = DateTime.Now;
-                this.Status = true;
-
                 return responseData;
             }
             else
@@ -201,9 +233,6 @@ namespace IntocastGasMeterApp.services
                 string responseString = response.Content.ReadAsStringAsync().Result;
                 Console.WriteLine(responseString);
                 dynamic errorData = JsonConvert.DeserializeObject(responseString);
-
-                this.LastError = errorData.message;
-                this.Status = false;
 
                 throw new HttpIOException(errorData.message);
             }
@@ -267,15 +296,15 @@ namespace IntocastGasMeterApp.services
             // temporary login for testing
             if (username == "admin" && password == "admin")
             {
-                LoginResultEvent?.Invoke(this, true);
-                this.sessionId = "admin";
-                Properties.Settings.Default.sessionId = this.sessionId;
+                //AuthResultEvent?.Invoke(this, true);
+                this.SessionId = "admin";
+                Properties.Settings.Default.sessionId = this.SessionId;
                 if (saveSessionId) Properties.Settings.Default.Save();
-                return this.sessionId;
+                return this.SessionId;
             }
             else
             {
-                LoginResultEvent?.Invoke(this, false);
+                //AuthResultEvent?.Invoke(this, false);
                 return "Error";
             }
         }

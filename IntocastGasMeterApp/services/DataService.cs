@@ -71,7 +71,10 @@ namespace IntocastGasMeterApp.services
         private DataService()
         {
             this.api = ApiService.GetInstance();
+
             timer = new System.Timers.Timer();
+            timer.Elapsed += OnTimedEvent;
+            timer.AutoReset = true;
 
             this.AccumulatedUsage = new ObservableCollection<ObservableValue>();
             this.ActualUsage = new ObservableCollection<ObservableValue>();
@@ -90,7 +93,7 @@ namespace IntocastGasMeterApp.services
             }
             DateTime measureStart = new DateTime(DateTime.Now.Year, DateTime.Now.Month, day, hours, Int32.Parse(measuementStart.Split(':')[1]), 0);
             this.MeasureStart = measureStart;
-            MeasureStart = MeasureStart.AddHours(-48);
+            //MeasureStart = MeasureStart.AddHours(-48);
         }
 
         public static DataService GetInstance()
@@ -194,14 +197,18 @@ namespace IntocastGasMeterApp.services
             }
         }
 
-        public void setCallTimer(int interval)
+        public void SetCallTimer(int interval)
         {
             // get a new value every 5 minutes
             timer.Interval = interval;
-            timer.Elapsed += OnTimedEvent;
-            timer.AutoReset = true;
             timer.Enabled = true;
             timer.Start();
+        }
+
+        public void StopCallTimer()
+        {
+            timer.Stop();
+            timer.Enabled = false;
         }
 
         private void OnTimedEvent(object source, ElapsedEventArgs e)
@@ -226,7 +233,7 @@ namespace IntocastGasMeterApp.services
 
                     // start of measurement
                     MeasurementsRecord[] measurements = [];
-                    measurements = api.GetDeviceData(api.sessionId, device.DeviceNumber, now.AddMinutes(-5), now);
+                    measurements = api.GetDeviceData(api.SessionId, device.DeviceNumber, now.AddMinutes(-5), now);
 
                     if (now >= device.LastDataUpdateSlot.AddMinutes(10))
                     {

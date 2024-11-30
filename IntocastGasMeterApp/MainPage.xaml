@@ -12,6 +12,7 @@
     <DockPanel Margin="0">
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="Nastavenia" Click="ToSettings"></MenuItem>
+            <MenuItem Header="Odhlásiť" Click="Logout"></MenuItem>
         </Menu>
 
         <Border DockPanel.Dock="Top" BorderThickness="0,0,0,5" BorderBrush="{StaticResource PrimaryColorBrush}">

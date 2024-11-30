@@ -27,7 +27,7 @@ namespace IntocastGasMeterApp
         public SettingsPage()
         {
             this.api = ApiService.GetInstance();
-            this.api.LoginResultEvent += this.onLoginResult;
+            this.api.AuthResultEvent += this.onLoginResult;
 
             InitializeComponent();
             InitMeasureComboBox();
@@ -84,7 +84,7 @@ namespace IntocastGasMeterApp
 
         public void ToMainPage(object sender, RoutedEventArgs e)
         {
-            this.api.LoginResultEvent -= this.onLoginResult;
+            this.api.AuthResultEvent -= this.onLoginResult;
             ((MainWindow)Application.Current.MainWindow).navigateToMainPage();
         }
 
@@ -115,14 +115,14 @@ namespace IntocastGasMeterApp
         }
 
         // auth section
-        private void onLoginResult(object sender, bool result)
+        private void onLoginResult(object sender, LoginStatus result)
         {
-            if (result)
+            if (result is LoginStatus.LOGIN_CHECK_SUCCESS)
             {
                 AuthContent.Visibility = Visibility.Hidden;
                 SettingsContent.Visibility = Visibility.Visible;
             }
-            else
+            else if (result is LoginStatus.LOGIN_FAILURE)
             {
                 Console.WriteLine("Login failed");
             }

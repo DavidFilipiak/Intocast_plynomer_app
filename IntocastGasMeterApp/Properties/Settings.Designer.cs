@@ -119,12 +119,33 @@ namespace IntocastGasMeterApp.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string customerId {
+        public string username {
             get {
-                return ((string)(this["customerId"]));
+                return ((string)(this["username"]));
             }
             set {
-                this["customerId"] = value;
+                this["username"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string password {
+            get {
+                return ((string)(this["password"]));
+            }
+            set {
+                this["password"] = value;
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("CFefvDqM1SESOiF9JMSfbW7qGaCKdUgC")]
+        public string key {
+            get {
+                return ((string)(this["key"]));
             }
         }
     }

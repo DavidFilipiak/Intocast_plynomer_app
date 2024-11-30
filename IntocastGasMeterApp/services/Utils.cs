@@ -3,8 +3,10 @@ using LiveChartsCore.Defaults;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -80,6 +82,48 @@ namespace IntocastGasMeterApp.services
                 sum += value;
             }
             return sum;
+        }
+
+        public static string Encrypt(string plainText)
+        {
+            string key = Properties.Settings.Default.key;
+            byte[] keyBytes = Encoding.UTF8.GetBytes(key);
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = keyBytes;
+                aes.IV = new byte[16]; // Initialization vector (16 bytes for AES-128)
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    using (CryptoStream cs = new CryptoStream(ms, aes.CreateEncryptor(), CryptoStreamMode.Write))
+                    {
+                        byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
+                        cs.Write(plainBytes, 0, plainBytes.Length);
+                        cs.FlushFinalBlock();
+                    }
+                    return Convert.ToBase64String(ms.ToArray());
+                }
+            }
+        }
+
+        public static string Decrypt(string cipherText)
+        {
+            string key = Properties.Settings.Default.key;
+            byte[] keyBytes = Encoding.UTF8.GetBytes(key);
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = keyBytes;
+                aes.IV = new byte[16];
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    using (CryptoStream cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Write))
+                    {
+                        byte[] cipherBytes = Convert.FromBase64String(cipherText);
+                        cs.Write(cipherBytes, 0, cipherBytes.Length);
+                        cs.FlushFinalBlock();
+                    }
+                    return Encoding.UTF8.GetString(ms.ToArray());
+                }
+            }
         }
     }
 }

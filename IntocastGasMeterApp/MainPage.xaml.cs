@@ -55,11 +55,22 @@ namespace IntocastGasMeterApp
             barChart.SetAgreedLine(Properties.Settings.Default.usage_agreed_max);
         }
 
-        public string ThroughputDiff { get; set; }
-
         public void ToSettings(object sender, RoutedEventArgs e)
         {
             ((MainWindow)Application.Current.MainWindow).navigateToSettingsPage();
+        }
+
+        public void Logout(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                api.Logout();
+            }
+            catch (Exception ex) 
+            {
+                MessageBox.Show(ex.Message);
+            }
+            
         }
 
         public void DeviceSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -76,29 +87,6 @@ namespace IntocastGasMeterApp
                 this.data.UpdateBarChartData();
                 this.data.UpdateLineChartData();
                 this.data.UpdateLabels();
-
-                /*
-                Device device = Device.Get(selectedContent);
-                var slots = device.Slots;
-                MeasurementsRecord[] records = slots.Values.ToArray();
-                DateTime[] times = slots.Keys.ToArray();
-                for (int i = 0; i < records.Length; i++)
-                {
-                    Console.Write(times[i]);
-                    Console.Write(" ");
-
-                    if (records[i] != null)
-                    {                        
-                        Console.Write(records[i].Date);
-                        Console.Write(" ");
-                        Console.WriteLine(records[i].Temperature);
-                    }
-                    else
-                    {
-                        Console.WriteLine("null");
-                    }                    
-                }
-                */
             }
         }
     }
