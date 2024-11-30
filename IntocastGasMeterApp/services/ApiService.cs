@@ -40,11 +40,11 @@ namespace IntocastGasMeterApp.services
             }
         }
 
-        public event EventHandler<LoginStatus> AuthResultEvent;
+        public event EventHandler<LoginStatus>? AuthResultEvent;
         
 
         private readonly HttpClient client;
-        private static ApiService instance = null;
+        private static ApiService? instance = null;
         private ApiService()
         {
             this.client = new HttpClient();
@@ -53,6 +53,8 @@ namespace IntocastGasMeterApp.services
             this.SessionId = Properties.Settings.Default.sessionId;
             //this.SessionId = "";
             this.SelectedDevice = "Spolu";
+            this.DEVICE_NUMBERS = new string[2];
+            this.CUSTOMER_ID = "";
             Console.WriteLine(this.SessionId);
         }
 
@@ -151,9 +153,9 @@ namespace IntocastGasMeterApp.services
             if (response.IsSuccessStatusCode)
             {
                 string responseString = response.Content.ReadAsStringAsync().Result;
-                dynamic responseJson = JsonConvert.DeserializeObject(responseString);
+                dynamic? responseJson = JsonConvert.DeserializeObject(responseString);
                 Console.WriteLine(responseJson);
-                this.SessionId = responseJson.sessionId;
+                this.SessionId = responseJson is null ? "" : responseJson.sessionId;
                 Properties.Settings.Default.sessionId = this.SessionId;
 
                 if ((bool)saveSession)
@@ -170,10 +172,10 @@ namespace IntocastGasMeterApp.services
                 
                 string responseString = response.Content.ReadAsStringAsync().Result;
                 Console.WriteLine(responseString);
-                dynamic errorData = JsonConvert.DeserializeObject(responseString);
+                dynamic? errorData = JsonConvert.DeserializeObject(responseString);
 
                 AuthResultEvent?.Invoke(this, LoginStatus.LOGIN_FAILURE);
-                throw new Exception(errorData.message.ToString());
+                throw new Exception(errorData?.message.ToString());
             }
         }
 
@@ -193,7 +195,7 @@ namespace IntocastGasMeterApp.services
             if (response.IsSuccessStatusCode)
             {
                 string responseString = response.Content.ReadAsStringAsync().Result;
-                dynamic responseJson = JsonConvert.DeserializeObject(responseString);
+                dynamic? responseJson = JsonConvert.DeserializeObject(responseString);
 
                 AuthResultEvent?.Invoke(this, LoginStatus.LOGOUT_SUCCESS);
             }
@@ -201,10 +203,10 @@ namespace IntocastGasMeterApp.services
             {
                 string responseString = response.Content.ReadAsStringAsync().Result;
                 Console.WriteLine(responseString);
-                dynamic errorData = JsonConvert.DeserializeObject(responseString);
+                dynamic? errorData = JsonConvert.DeserializeObject(responseString);
 
                 AuthResultEvent?.Invoke(this, LoginStatus.LOGOUT_FAILURE);
-                throw new Exception(errorData.message.ToString());
+                throw new Exception(errorData?.message.ToString());
             }
         }
 
@@ -224,17 +226,17 @@ namespace IntocastGasMeterApp.services
             {            
                 string responseString = response.Content.ReadAsStringAsync().Result;
                 Console.WriteLine(JsonConvert.DeserializeObject(responseString));
-                MasterData[] responseData = JsonConvert.DeserializeObject<MasterData[]>(responseString);
-
+                MasterData[]? responseData = JsonConvert.DeserializeObject<MasterData[]>(responseString);
+                responseData = responseData is null ? new MasterData[0] : responseData;
                 return responseData;
             }
             else
             {
                 string responseString = response.Content.ReadAsStringAsync().Result;
                 Console.WriteLine(responseString);
-                dynamic errorData = JsonConvert.DeserializeObject(responseString);
+                dynamic? errorData = JsonConvert.DeserializeObject(responseString);
 
-                throw new HttpIOException(errorData.message);
+                throw new Exception(errorData?.message);
             }
         }
 
@@ -267,9 +269,9 @@ namespace IntocastGasMeterApp.services
             {
                 string responseString = response.Content.ReadAsStringAsync().Result;
                 Console.WriteLine(responseString);
-                dynamic errorData = JsonConvert.DeserializeObject(responseString);
+                dynamic? errorData = JsonConvert.DeserializeObject(responseString);
 
-                throw new HttpIOException(errorData.message);
+                throw new Exception(errorData?.message);
             }            
         }
 
