@@ -47,8 +47,10 @@ namespace IntocastGasMeterApp.services
         private static ApiService? instance = null;
         private ApiService()
         {
-            this.client = new HttpClient();
-            this.client.BaseAddress = new Uri(SPP_API_URL);
+            this.client = new()
+            {
+                BaseAddress = new Uri(SPP_API_URL)
+            };
 
             this.SessionId = Properties.Settings.Default.sessionId;
             //this.SessionId = "";
@@ -61,20 +63,17 @@ namespace IntocastGasMeterApp.services
         // singleton service
         public static ApiService GetInstance()
         {
-            if (instance == null)
-            {
-                instance = new ApiService();
-            }
+            instance ??= new ApiService();
             return instance;
         }
 
         // Construct a query string from a dictionary of parameters
-        private string BuildQueryString(Dictionary<string, string> parameters, bool urlEncode)
+        static string BuildQueryString(Dictionary<string, string> parameters, bool urlEncode)
         {
             if (parameters == null || parameters.Count == 0)
                 return string.Empty;
 
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             foreach (var kvp in parameters)
             {
                 if (sb.Length > 0)
@@ -90,7 +89,7 @@ namespace IntocastGasMeterApp.services
             return "?" + sb.ToString();
         }
 
-        public void clearSession()
+        public void ClearSession()
         {
             this.SessionId = String.Empty;
             Properties.Settings.Default.sessionId = this.SessionId;
@@ -139,7 +138,7 @@ namespace IntocastGasMeterApp.services
 
             Console.WriteLine(username + "; " + password + "; " + saveSession);
 
-            string queryString = this.BuildQueryString(
+            string queryString = BuildQueryString(
                 new Dictionary<string, string> 
                 { 
                     { "name", username }, 
@@ -183,7 +182,7 @@ namespace IntocastGasMeterApp.services
         {
             string sessionId = this.SessionId;
 
-            string queryString = this.BuildQueryString(
+            string queryString = BuildQueryString(
                 new Dictionary<string, string>
                 {
                     { "sessionId", sessionId }
@@ -212,7 +211,7 @@ namespace IntocastGasMeterApp.services
 
         public MasterData[] GetMasterData(string sessionId)
         {
-            string queryString = this.BuildQueryString(
+            string queryString = BuildQueryString(
                 new Dictionary<string, string>
                 {
                     { "sessionId", sessionId }
@@ -227,7 +226,7 @@ namespace IntocastGasMeterApp.services
                 string responseString = response.Content.ReadAsStringAsync().Result;
                 Console.WriteLine(JsonConvert.DeserializeObject(responseString));
                 MasterData[]? responseData = JsonConvert.DeserializeObject<MasterData[]>(responseString);
-                responseData = responseData is null ? new MasterData[0] : responseData;
+                responseData = responseData is null ? [] : responseData;
                 return responseData;
             }
             else
@@ -243,7 +242,7 @@ namespace IntocastGasMeterApp.services
         public MeasurementsRecord[] GetDeviceData(string sessionId, string deviceNumber, DateTime from, DateTime to)
         {
             string customerId = this.CUSTOMER_ID;
-            string queryString = this.BuildQueryString(
+            string queryString = BuildQueryString(
                 new Dictionary<string, string>
                 {
                     { "sessionId", sessionId },
@@ -273,42 +272,6 @@ namespace IntocastGasMeterApp.services
 
                 throw new Exception(errorData?.message);
             }            
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        public string LoginTest(string username, string password, bool saveSessionId)
-        {
-            Console.WriteLine(saveSessionId);
-            // temporary login for testing
-            if (username == "admin" && password == "admin")
-            {
-                //AuthResultEvent?.Invoke(this, true);
-                this.SessionId = "admin";
-                Properties.Settings.Default.sessionId = this.SessionId;
-                if (saveSessionId) Properties.Settings.Default.Save();
-                return this.SessionId;
-            }
-            else
-            {
-                //AuthResultEvent?.Invoke(this, false);
-                return "Error";
-            }
         }
     }
 }

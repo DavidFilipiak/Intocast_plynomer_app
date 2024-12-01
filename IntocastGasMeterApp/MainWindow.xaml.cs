@@ -65,8 +65,8 @@ namespace IntocastGasMeterApp
             {
                 this.loadMasterData(false);
                 this.loadInitialDeviceData();
-                //this.TestLoadData();
                 data.SetCallTimer(1000 * 60);
+                //this.TestLoadData();
                 navigateToMainPage();
             }
             else if (result is LoginStatus.LOGIN_FAILURE)
@@ -79,7 +79,7 @@ namespace IntocastGasMeterApp
                 AuthContent.Visibility = Visibility.Visible;
                 MainFrame.Visibility = Visibility.Hidden;
                 data.StopCallTimer();
-                api.clearSession();
+                api.ClearSession();
                 data.ClearDataLists();
                 foreach (Device device in Device.devices)
                 {
@@ -180,10 +180,15 @@ namespace IntocastGasMeterApp
             }
         }
 
+
+
+
+        // Test method for fetching data
+
         private int MinuteOffset { get; set; }
         private void TestLoadData()
         {
-            MinuteOffset = 60*6;  //23 hours
+            MinuteOffset = 5;  //23 hours
 
             try
             {
@@ -219,7 +224,7 @@ namespace IntocastGasMeterApp
             }
 
             System.Timers.Timer timer = new System.Timers.Timer();
-            timer.Interval = 5000;
+            timer.Interval = 2000;
             timer.Elapsed += OnTimedEvent;
             timer.AutoReset = true;
             timer.Enabled = true;
