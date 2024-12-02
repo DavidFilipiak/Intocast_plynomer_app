@@ -46,7 +46,7 @@ namespace IntocastGasMeterApp.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("00:00")]
+        [global::System.Configuration.DefaultSettingValueAttribute("06:00")]
         public string measure_start {
             get {
                 return ((string)(this["measure_start"]));
@@ -70,7 +70,7 @@ namespace IntocastGasMeterApp.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        [global::System.Configuration.DefaultSettingValueAttribute("15000")]
         public double usage_agreed_max {
             get {
                 return ((double)(this["usage_agreed_max"]));
@@ -82,7 +82,7 @@ namespace IntocastGasMeterApp.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        [global::System.Configuration.DefaultSettingValueAttribute("14500")]
         public double usage_set_max {
             get {
                 return ((double)(this["usage_set_max"]));
@@ -94,7 +94,7 @@ namespace IntocastGasMeterApp.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        [global::System.Configuration.DefaultSettingValueAttribute("40")]
         public double throughput_agreed {
             get {
                 return ((double)(this["throughput_agreed"]));

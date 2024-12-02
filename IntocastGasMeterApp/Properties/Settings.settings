@@ -9,19 +9,19 @@
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="measure_start" Type="System.String" Scope="User">
-      <Value Profile="(Default)">00:00</Value>
+      <Value Profile="(Default)">06:00</Value>
     </Setting>
     <Setting Name="interval" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">5</Value>
     </Setting>
     <Setting Name="usage_agreed_max" Type="System.Double" Scope="User">
-      <Value Profile="(Default)">0</Value>
+      <Value Profile="(Default)">15000</Value>
     </Setting>
     <Setting Name="usage_set_max" Type="System.Double" Scope="User">
-      <Value Profile="(Default)">0</Value>
+      <Value Profile="(Default)">14500</Value>
     </Setting>
     <Setting Name="throughput_agreed" Type="System.Double" Scope="User">
-      <Value Profile="(Default)">0</Value>
+      <Value Profile="(Default)">40</Value>
     </Setting>
     <Setting Name="sessionId" Type="System.String" Scope="User">
       <Value Profile="(Default)" />

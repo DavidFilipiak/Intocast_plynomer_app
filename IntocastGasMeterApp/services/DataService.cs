@@ -105,20 +105,19 @@ namespace IntocastGasMeterApp.services
             return instance;
         }
 
-        public void UpdateLabels()
+        public void UpdateLabels(Device device)
         {
-            Device device = GetCorrectDevice();
             DateTime lastUpdateSlot = device.LastRealDataUpdateSlot;
             double AgreedUsage = Properties.Settings.Default.usage_agreed_max;
             double agreedThroughput = Properties.Settings.Default.throughput_agreed;
             MeasurementsRecord lastRecord;
             bool dateTimeExists = device.Slots.TryGetValue(lastUpdateSlot, out lastRecord);
-            if (dateTimeExists && lastRecord is not null)
+            if (dateTimeExists && lastRecord is not null && !lastRecord.IsPartial)
             {
                 AccumulatedUsageLabel = Math.Round(lastRecord.AccumulatedUsage, 2).ToString();
                 AccumulatedUsageDiffLabel = Math.Round(AgreedUsage - lastRecord.AccumulatedUsage, 2).ToString();
-                TemperatureLabel = Math.Round(lastRecord.Temperature, 2).ToString();
-                PressureLabel = Math.Round(lastRecord.Pressure, 2).ToString();
+                TemperatureLabel = Math.Round((double)lastRecord.Temperature, 2).ToString();
+                PressureLabel = Math.Round((double)lastRecord.Pressure, 2).ToString();
                 ThroughputLabel = Math.Round(lastRecord.ActualUsage, 2).ToString();
                 ThroughputDiffLabel = Math.Round(agreedThroughput - lastRecord.ActualUsage, 2).ToString();
             }
@@ -141,10 +140,8 @@ namespace IntocastGasMeterApp.services
             if (device.IsActive) ActiveDevice = device.DeviceNumber;
         }
 
-        public void UpdateBarChartData()
+        public void UpdateBarChartData(Device device)
         {
-            Device device = GetCorrectDevice();
-
             for (int i = 0; i < AccumulatedUsage.Count; i++)
             {
                 AccumulatedUsage[i].Value = device.AccumulatedUsage[i];
@@ -155,10 +152,8 @@ namespace IntocastGasMeterApp.services
             }
         }
 
-        public void UpdateLineChartData()
+        public void UpdateLineChartData(Device device)
         {
-            Device device = GetCorrectDevice();
-
             for (int i = 0; i < Temperature.Count; i++)
             {
                 Temperature[i].Value = device.Temperature[i];
@@ -184,19 +179,6 @@ namespace IntocastGasMeterApp.services
             AccumulatedUsage.Clear();
         }
 
-        private Device GetCorrectDevice()
-        {
-            string selectedDevice = api.SelectedDevice;
-            if (selectedDevice != "Spolu")
-            {
-                return Device.Get(selectedDevice);
-            }
-            else
-            {
-                return Device.Combine(Device.devices.ToArray());
-            }
-        }
-
         public void SetCallTimer(int interval)
         {
             // get a new value every 5 minutes
@@ -217,6 +199,8 @@ namespace IntocastGasMeterApp.services
             try
             {
                 DateTime now = DateTime.Now;
+                Device[] devices = Device.devices.Where(device => device.DeviceNumber != Device.COMBINED_DEVICE_NUMBER).ToArray();
+
                 if (now > MeasureStart.AddHours(24))
                 {
                     ClearDataLists();
@@ -227,7 +211,7 @@ namespace IntocastGasMeterApp.services
                     MeasureStart = MeasureStart.AddHours(24);
                 }
 
-                foreach (Device device in Device.devices)
+                foreach (Device device in devices)
                 {
                     Console.WriteLine($"Fetching data for device: {device.DeviceNumber}");
 
@@ -238,6 +222,7 @@ namespace IntocastGasMeterApp.services
                     if (now >= device.LastDataUpdateSlot.AddMinutes(10))
                     {
                         device.LastDataUpdateSlot = device.LastDataUpdateSlot.AddMinutes(5);
+                        device.AddPartialRecords();
                         if (device.IsActive)
                         {
                             UpdateStatus("Chýbajúce dáta", "Za posledných 10 minút neprišli žiadne nové dáta. Zobrazené údaje nemusia byť aktuálne.", Colors.Orange);
@@ -248,12 +233,23 @@ namespace IntocastGasMeterApp.services
                     foreach (var item in measurements)
                     {
                         device.HandleNewRecord(item);                        
-                    }                    
+                    }
                 }
 
-                this.UpdateBarChartData();
-                this.UpdateLineChartData();
-                this.UpdateLabels();
+                string selectedDeviceNumber = api.SelectedDevice;
+                Device selectedDevice = null;
+                if (selectedDeviceNumber != Device.COMBINED_DEVICE_NUMBER)
+                {
+                    selectedDevice = Device.Get(selectedDeviceNumber);
+                }
+                else
+                {
+                    selectedDevice = Device.Combine(Device.devices.ToArray());
+                    Device.combinedDevice = selectedDevice;
+                }
+                this.UpdateBarChartData(selectedDevice);
+                this.UpdateLineChartData(selectedDevice);
+                this.UpdateLabels(selectedDevice);
 
             }
             catch (Exception ex)

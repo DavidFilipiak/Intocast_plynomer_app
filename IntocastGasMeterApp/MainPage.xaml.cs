@@ -84,9 +84,20 @@ namespace IntocastGasMeterApp
                 // Access the content of the selected ComboBoxItem
                 string selectedContent = selectedItem.Content.ToString();
                 this.api.SelectedDevice = selectedContent;
-                this.data.UpdateBarChartData();
-                this.data.UpdateLineChartData();
-                this.data.UpdateLabels();
+
+                Device selectedDevice = null;
+                if (selectedContent != Device.COMBINED_DEVICE_NUMBER)
+                {
+                    selectedDevice = Device.Get(selectedContent);
+                }
+                else
+                {
+                    selectedDevice = Device.Combine(Device.devices.ToArray());
+                    Device.combinedDevice = selectedDevice;
+                }
+                this.data.UpdateBarChartData(selectedDevice);
+                this.data.UpdateLineChartData(selectedDevice);
+                this.data.UpdateLabels(selectedDevice);
             }
         }
     }

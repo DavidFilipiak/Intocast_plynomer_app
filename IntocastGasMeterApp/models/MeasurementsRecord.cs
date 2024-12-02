@@ -21,11 +21,31 @@ namespace IntocastGasMeterApp.models
             "Dátum archívu"
         };
 
+        public static MeasurementsRecord GetPartialCopy(MeasurementsRecord record)
+        {
+            MeasurementsRecord newRecord = new MeasurementsRecord();
+            newRecord.Date = record.Date;
+            newRecord.DeviceRaw = record.DeviceRaw;
+            newRecord.DeviceNormal = record.DeviceNormal;
+            newRecord.Pressure = null;
+            newRecord.Temperature = null;
+            newRecord.Throughput = null;
+            newRecord.DeviceRawArchived = record.DeviceRawArchived;
+            newRecord.DeviceNormalArchived = record.DeviceNormalArchived;
+            newRecord.ArchiveDate = record.ArchiveDate;
+            newRecord.AccumulatedUsage = record.AccumulatedUsage;
+            newRecord.ActualUsage = record.ActualUsage;
+            newRecord.IsPartial = true;
+            newRecord.IsFromActiveDevice = record.IsFromActiveDevice;
+
+            return newRecord;
+        }
+
         public DateTime Date { get; set; }
         public double DeviceRaw { get; set; }
-        public double DeviceNormal { get; set; }        
-        public double Pressure { get; set; }
-        public double Temperature { get; set; }
+        public double DeviceNormal { get; set; }
+        public double? Pressure { get; set; }
+        public double? Temperature { get; set; }
         public double DeviceRawArchived { get; set; }
         public double DeviceNormalArchived { get; set; }
         public DateTime ArchiveDate { get; set; }
@@ -33,6 +53,15 @@ namespace IntocastGasMeterApp.models
         // computed properties
         public double ActualUsage { get; set; }
         public double AccumulatedUsage { get; set; }
+        public double? Throughput { get; set; }
+
+        public bool IsPartial { get; set; }
+        public bool IsFromActiveDevice { get; set; }
+
+
+        public MeasurementsRecord() {
+            IsPartial = false;
+        }
 
         public MeasurementsRecord(
            string _date, 
@@ -53,6 +82,8 @@ namespace IntocastGasMeterApp.models
             DeviceRawArchived = _deviceRawArchived;
             DeviceNormalArchived = _deviceModifiedArchived;
             ArchiveDate = DateTime.ParseExact(_archiveDate, "MM/dd/yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+
+            IsPartial = false;
         }
 
         public override string ToString()

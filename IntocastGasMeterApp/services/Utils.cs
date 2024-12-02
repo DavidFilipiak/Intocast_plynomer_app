@@ -84,6 +84,11 @@ namespace IntocastGasMeterApp.services
             return sum;
         }
 
+        public static T Max<T>(IEnumerable<T> values)
+        {
+            return values.Max();
+        }
+
         public static string Encrypt(string plainText)
         {
             string key = Properties.Settings.Default.key;

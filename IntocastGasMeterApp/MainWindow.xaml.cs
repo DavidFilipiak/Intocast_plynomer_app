@@ -168,7 +168,12 @@ namespace IntocastGasMeterApp
                     device.LastDataQuery = DateTime.Now;
 
                     Console.WriteLine("Device: " + device.DeviceNumber + ", number of data: " + device.NumberOfRecords.ToString());
-                }                
+                    device.AddPartialRecords();
+                }
+
+
+                //Device combined = Device.Combine(Device.devices.ToArray());
+               // Device.devices.Add(combined);
             }
             catch (Exception ex)
             {
@@ -275,9 +280,15 @@ namespace IntocastGasMeterApp
                     MinuteOffset += 1;
                 }
 
-                data.UpdateBarChartData();
-                data.UpdateLineChartData();
-                data.UpdateLabels();
+                string selectedDeviceNumber = api.SelectedDevice;
+                Device selectedDevice = null;
+                if (selectedDeviceNumber != Device.COMBINED_DEVICE_NUMBER)
+                {
+                    selectedDevice = Device.Get(selectedDeviceNumber);
+                }
+                data.UpdateBarChartData(selectedDevice);
+                data.UpdateLineChartData(selectedDevice);
+                data.UpdateLabels(selectedDevice);
             }
             catch (Exception ex)
             {
