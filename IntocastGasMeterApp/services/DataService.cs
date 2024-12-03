@@ -33,6 +33,7 @@ namespace IntocastGasMeterApp.services
         public readonly ObservableCollection<DateTime> measuredTimes;
 
         public DateTime MeasureStart { get; set; }
+        public bool ShowingHistoricalData { get; set; }
 
         // dynamic output label variables
         private string _accumulatedUsageLabel;
@@ -256,6 +257,73 @@ namespace IntocastGasMeterApp.services
             {
                 Console.WriteLine(ex.Message);
                 UpdateStatus("Chyba", ex.Message, Colors.Red);
+            }
+        }
+
+        public void ChangeChartsToDate(DateTime date)
+        {
+            try
+            {
+                MeasurementsRecord[][] measurementsArray = new MeasurementsRecord[Device.devices.Count][];
+                int i = 0;
+                foreach (Device device in Device.devices)
+                {
+                    // start of measurements
+
+                    MeasurementsRecord[] measurements = api.GetDeviceData(api.SessionId, device.DeviceNumber, date, date.AddHours(23).AddMinutes(59));
+                    measurementsArray[i] = measurements;
+                    i++;
+                }
+
+                int[] counts = new int[Device.devices.Count];
+                i = 0;
+                foreach (var item in measurementsArray)
+                {
+                    counts[i] = item.Length;
+                    i++;
+                }
+                // if all counts are 0, return;
+                if (counts.All(count => count == 0))
+                {
+                    MessageBox.Show("Pre zvolený dátum neexistujú žiadne merania");
+                    return;
+                }
+
+                i = 0;
+                foreach (Device device in Device.devices) { 
+                    device.ResetDevice(date);
+                    MeasurementsRecord[] measurements = measurementsArray[i];
+                    foreach (var item in measurements)
+                    {
+                        device.HandleNewRecord(item);
+                    }
+
+                    Console.WriteLine("Device: " + device.DeviceNumber + ", number of data: " + device.NumberOfRecords.ToString());
+                    device.AddPartialRecords();
+                    i++;
+                }
+
+                this.ClearDataLists();
+                string selectedDeviceNumber = api.SelectedDevice;
+                Device selectedDevice = null;
+                if (selectedDeviceNumber != Device.COMBINED_DEVICE_NUMBER)
+                {
+                    selectedDevice = Device.Get(selectedDeviceNumber);
+                }
+                else
+                {
+                    selectedDevice = Device.Combine(Device.devices.ToArray());
+                    Device.combinedDevice = selectedDevice;
+                }
+                this.UpdateBarChartData(selectedDevice);
+                this.UpdateLineChartData(selectedDevice);
+                this.UpdateLabels(selectedDevice);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Source);
+                Console.WriteLine(ex.StackTrace);
+                Console.WriteLine(ex.Message);
             }
         }
 

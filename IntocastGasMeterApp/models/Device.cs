@@ -309,11 +309,16 @@ namespace IntocastGasMeterApp.models
         // this should be called when the new 24 hour period starts
         public void ResetDevice()
         {
-            Dictionary<DateTime, MeasurementsRecord> newSlots = new Dictionary<DateTime, MeasurementsRecord>();
             DateTime measureStart = DataService.GetInstance().MeasureStart.AddHours(24);
-            DateTime measureEnd = measureStart.AddHours(24);
+            this.ResetDevice(measureStart);
+        }
+
+        public void ResetDevice(DateTime resetDate)
+        {
+            Dictionary<DateTime, MeasurementsRecord> newSlots = new Dictionary<DateTime, MeasurementsRecord>();
+            DateTime measureEnd = resetDate.AddHours(24);
             this.Slots.Clear();
-            for (DateTime time = measureStart; time < measureEnd; time = time.AddMinutes(5))
+            for (DateTime time = resetDate; time < measureEnd; time = time.AddMinutes(5))
             {
                 this.Slots.Add(time, null);
                 Console.WriteLine("Resetting device:" + time);

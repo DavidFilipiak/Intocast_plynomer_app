@@ -66,11 +66,11 @@ namespace IntocastGasMeterApp
             {
                 api.Logout();
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
-            
+
         }
 
         public void DeviceSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -98,6 +98,39 @@ namespace IntocastGasMeterApp
                 this.data.UpdateBarChartData(selectedDevice);
                 this.data.UpdateLineChartData(selectedDevice);
                 this.data.UpdateLabels(selectedDevice);
+            }
+        }
+
+        private void ChangeDateToday(object sender, RoutedEventArgs e)
+        {
+            DateTime today = data.MeasureStart;
+            data.SetCallTimer(1000 * 60);
+            this.data.ChangeChartsToDate(today);
+            this.data.UpdateStatus("OK", "", Colors.LimeGreen);
+        }
+
+        private void ChangeDateAny(object sender, SelectionChangedEventArgs e)
+        {
+            DatePicker datePicker = sender as DatePicker;
+            DateTime? selectedDate = datePicker.SelectedDate;
+
+            if (selectedDate.HasValue)
+            {
+                // Use the selected date
+                DateTime date = selectedDate.Value;
+                DateTime measureStart = this.data.MeasureStart;
+                date = new DateTime(date.Year, date.Month, date.Day, measureStart.Hour, measureStart.Minute, 0);
+
+                if (date == this.data.MeasureStart)
+                {
+                    this.ChangeDateToday(sender, e);
+                }
+                else
+                {
+                    data.StopCallTimer();
+                    this.data.ChangeChartsToDate(date);
+                    this.data.UpdateStatus("Historické údaje", "Pri prezeraní historických dát da neobnovujú aktuálne údaje.", Colors.Orange);
+                }
             }
         }
     }

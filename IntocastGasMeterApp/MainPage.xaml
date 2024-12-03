@@ -17,7 +17,8 @@
 
         <Border DockPanel.Dock="Top" BorderThickness="0,0,0,5" BorderBrush="{StaticResource PrimaryColorBrush}">
             <DockPanel LastChildFill="False" Background="{StaticResource RedGradientBrush}" Opacity="0.7">
-                <DatePicker DockPanel.Dock="Left" x:Name="DatePicker" VerticalAlignment="Center" Width="150" Height="30" Padding="5"></DatePicker>
+                <DatePicker DockPanel.Dock="Left" x:Name="DatePicker" VerticalAlignment="Center" Width="150" Height="30" Padding="5" SelectedDateChanged="ChangeDateAny"></DatePicker>
+                <Button DockPanel.Dock="Left" x:Name="Button_Today" VerticalAlignment="Center" Width="75" Height="30" Padding="5" Margin="10,0,0,0" Click="ChangeDateToday">Dnes</Button>
 
                 <ComboBox DockPanel.Dock="Right" x:Name="ComboBox_GasMeter" VerticalAlignment="Center" Width="150" Height="30" Padding="5" SelectionChanged="DeviceSelectionChanged">
                     <ComboBoxItem Content="234610468296623"/>
