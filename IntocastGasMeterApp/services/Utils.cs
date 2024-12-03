@@ -47,7 +47,7 @@ namespace IntocastGasMeterApp.services
 
             if (!AreArraysEqual(headers, MeasurementsRecord.KNOWN_CSV_HEADERS))
             {
-                throw new Exception("Unknown CSV format");
+                throw new ApiChangedException("SPP API sa zmenilo. Kontaktujte developera.");
             }
 
             List<MeasurementsRecord> records = new List<MeasurementsRecord>();

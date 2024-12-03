@@ -120,158 +120,212 @@ namespace IntocastGasMeterApp.services
 
         public void Login(string username, string password, bool isMain, bool saveSession)
         {
-            if (!isMain)
+            try
             {
-                bool loginCheck = this.CheckLogin(username, password);
-                if (loginCheck)
+                if (!isMain)
                 {
-                    AuthResultEvent?.Invoke(this, LoginStatus.LOGIN_CHECK_SUCCESS);
+                    bool loginCheck = this.CheckLogin(username, password);
+                    if (loginCheck)
+                    {
+                        AuthResultEvent?.Invoke(this, LoginStatus.LOGIN_CHECK_SUCCESS);
+                    }
+                    else
+                    {
+                        AuthResultEvent?.Invoke(this, LoginStatus.LOGIN_FAILURE);
+                        throw new BadLoginException("Nesprávne meno alebo heslo.");
+                    }
+
+                    return;
+                }
+
+                Console.WriteLine(username + "; " + password + "; " + saveSession);
+
+                string queryString = BuildQueryString(
+                    new Dictionary<string, string>
+                    {
+                    { "name", username },
+                    { "password", password }
+                    },
+                    true
+                );
+
+                HttpResponseMessage response = this.client.PostAsync("logon.rails" + queryString, null).Result;
+                Console.WriteLine(response);
+                if (response.IsSuccessStatusCode)
+                {
+                    string responseString = response.Content.ReadAsStringAsync().Result;
+                    dynamic? responseJson = JsonConvert.DeserializeObject(responseString);
+                    Console.WriteLine(responseJson);
+                    this.SessionId = responseJson is null ? "" : responseJson.sessionId;
+                    Properties.Settings.Default.sessionId = this.SessionId;
+
+                    if ((bool)saveSession)
+                    {
+                        Properties.Settings.Default.username = Utils.Encrypt(username);
+                        Properties.Settings.Default.password = Utils.Encrypt(password);
+                        Properties.Settings.Default.Save();
+                    }
+
+                    AuthResultEvent?.Invoke(this, LoginStatus.LOGIN_SUCCESS);
                 }
                 else
                 {
+
+                    string responseString = response.Content.ReadAsStringAsync().Result;
+                    Console.WriteLine(responseString);
+                    dynamic? errorData = JsonConvert.DeserializeObject(responseString);
+
                     AuthResultEvent?.Invoke(this, LoginStatus.LOGIN_FAILURE);
-                    throw new Exception("Nesprávne meno alebo heslo.");
+                    throw new BadLoginException(errorData?.message.ToString());
                 }
-
-                return;
             }
-
-            Console.WriteLine(username + "; " + password + "; " + saveSession);
-
-            string queryString = BuildQueryString(
-                new Dictionary<string, string> 
-                { 
-                    { "name", username }, 
-                    { "password", password } 
-                },
-                true
-            );
-
-            HttpResponseMessage response = this.client.PostAsync("logon.rails" + queryString, null).Result;
-            Console.WriteLine(response);
-            if (response.IsSuccessStatusCode)
+            catch (HttpRequestException ex)
             {
-                string responseString = response.Content.ReadAsStringAsync().Result;
-                dynamic? responseJson = JsonConvert.DeserializeObject(responseString);
-                Console.WriteLine(responseJson);
-                this.SessionId = responseJson is null ? "" : responseJson.sessionId;
-                Properties.Settings.Default.sessionId = this.SessionId;
-
-                if ((bool)saveSession)
-                {
-                    Properties.Settings.Default.username = Utils.Encrypt(username);
-                    Properties.Settings.Default.password = Utils.Encrypt(password);
-                    Properties.Settings.Default.Save();
-                }
-
-                AuthResultEvent?.Invoke(this, LoginStatus.LOGIN_SUCCESS);
+                throw new NoInternetException("Došlo k problému s komunikáciou medzi aplikácou a serverom.");
             }
-            else
+            catch (BadLoginException ex)
             {
-                
-                string responseString = response.Content.ReadAsStringAsync().Result;
-                Console.WriteLine(responseString);
-                dynamic? errorData = JsonConvert.DeserializeObject(responseString);
-
-                AuthResultEvent?.Invoke(this, LoginStatus.LOGIN_FAILURE);
-                throw new Exception(errorData?.message.ToString());
+                throw new BadLoginException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
         }
 
         public void Logout()
         {
-            string sessionId = this.SessionId;
+            try
+            {
+                string sessionId = this.SessionId;
 
-            string queryString = BuildQueryString(
-                new Dictionary<string, string>
-                {
+                string queryString = BuildQueryString(
+                    new Dictionary<string, string>
+                    {
                     { "sessionId", sessionId }
-                },
-                false
-            );
+                    },
+                    false
+                );
 
-            HttpResponseMessage response = this.client.PostAsync("logoff.rails" + queryString, null).Result;
-            if (response.IsSuccessStatusCode)
-            {
-                string responseString = response.Content.ReadAsStringAsync().Result;
-                dynamic? responseJson = JsonConvert.DeserializeObject(responseString);
+                HttpResponseMessage response = this.client.PostAsync("logoff.rails" + queryString, null).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    string responseString = response.Content.ReadAsStringAsync().Result;
+                    dynamic? responseJson = JsonConvert.DeserializeObject(responseString);
 
-                AuthResultEvent?.Invoke(this, LoginStatus.LOGOUT_SUCCESS);
+                    AuthResultEvent?.Invoke(this, LoginStatus.LOGOUT_SUCCESS);
+                }
+                else
+                {
+                    string responseString = response.Content.ReadAsStringAsync().Result;
+                    Console.WriteLine(responseString);
+                    dynamic? errorData = JsonConvert.DeserializeObject(responseString);
+
+                    AuthResultEvent?.Invoke(this, LoginStatus.LOGOUT_FAILURE);
+                    throw new Exception(errorData?.message.ToString());
+                }
             }
-            else
+            catch (HttpRequestException ex)
             {
-                string responseString = response.Content.ReadAsStringAsync().Result;
-                Console.WriteLine(responseString);
-                dynamic? errorData = JsonConvert.DeserializeObject(responseString);
-
-                AuthResultEvent?.Invoke(this, LoginStatus.LOGOUT_FAILURE);
-                throw new Exception(errorData?.message.ToString());
+                throw new NoInternetException("Došlo k problému s komunikáciou medzi aplikácou a serverom.");
             }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
         }
 
         public MasterData[] GetMasterData(string sessionId)
         {
-            string queryString = BuildQueryString(
-                new Dictionary<string, string>
-                {
-                    { "sessionId", sessionId }
-                },
-                false
-            );
-
-            HttpResponseMessage response = this.client.GetAsync("GetMasterData.rails" + queryString).Result;
-            Console.WriteLine(response);
-            if (response.IsSuccessStatusCode)
-            {            
-                string responseString = response.Content.ReadAsStringAsync().Result;
-                Console.WriteLine(JsonConvert.DeserializeObject(responseString));
-                MasterData[]? responseData = JsonConvert.DeserializeObject<MasterData[]>(responseString);
-                responseData = responseData is null ? [] : responseData;
-                return responseData;
-            }
-            else
+            try
             {
-                string responseString = response.Content.ReadAsStringAsync().Result;
-                Console.WriteLine(responseString);
-                dynamic? errorData = JsonConvert.DeserializeObject(responseString);
+                string queryString = BuildQueryString(
+                    new Dictionary<string, string>
+                    {
+                        { "sessionId", sessionId }
+                    },
+                    false
+                );
 
-                throw new Exception(errorData?.message);
+                HttpResponseMessage response = this.client.GetAsync("GetMasterData.rails" + queryString).Result;
+                Console.WriteLine(response);
+                if (response.IsSuccessStatusCode)
+                {
+                    string responseString = response.Content.ReadAsStringAsync().Result;
+                    Console.WriteLine(JsonConvert.DeserializeObject(responseString));
+                    MasterData[]? responseData = JsonConvert.DeserializeObject<MasterData[]>(responseString);
+                    responseData = responseData is null ? [] : responseData;
+                    return responseData;
+                }
+                else
+                {
+                    string responseString = response.Content.ReadAsStringAsync().Result;
+                    Console.WriteLine(responseString);
+                    dynamic? errorData = JsonConvert.DeserializeObject(responseString);
+
+                    throw new Exception(errorData?.message);
+                }
             }
+            catch (HttpRequestException ex)
+            {
+                throw new NoInternetException("Došlo k problému s komunikáciou medzi aplikácou a serverom.");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
         }
 
         public MeasurementsRecord[] GetDeviceData(string sessionId, string deviceNumber, DateTime from, DateTime to)
         {
-            string customerId = this.CUSTOMER_ID;
-            string queryString = BuildQueryString(
-                new Dictionary<string, string>
-                {
+            try
+            {
+                string customerId = this.CUSTOMER_ID;
+                string queryString = BuildQueryString(
+                    new Dictionary<string, string>
+                    {
                     { "sessionId", sessionId },
                     { "pod", customerId },
                     { "deviceSerialNumber", deviceNumber },
                     { "dateFrom", from.ToString("yyyy-MM-ddTHH:mm:ss") },
                     { "dateTo", to.ToString("yyyy-MM-ddTHH:mm:ss") }
-                },
-                false
-            );
+                    },
+                    false
+                );
 
-            HttpResponseMessage response = this.client.GetAsync("GetCsvReport.rails" + queryString).Result;
-            //Console.WriteLine(response);
-            if (response.IsSuccessStatusCode)
-            {
-                string responseString = response.Content.ReadAsStringAsync().Result;
-                //Console.WriteLine(responseString);
-                MeasurementsRecord[] records = Utils.parseCSVMeasurements(responseString, ";");
+                HttpResponseMessage response = this.client.GetAsync("GetCsvReport.rails" + queryString).Result;
+                //Console.WriteLine(response);
+                if (response.IsSuccessStatusCode)
+                {
+                    string responseString = response.Content.ReadAsStringAsync().Result;
+                    //Console.WriteLine(responseString);
+                    MeasurementsRecord[] records = Utils.parseCSVMeasurements(responseString, ";");
 
-                return records;
+                    return records;
+                }
+                else
+                {
+                    string responseString = response.Content.ReadAsStringAsync().Result;
+                    Console.WriteLine(responseString);
+                    dynamic? errorData = JsonConvert.DeserializeObject(responseString);
+
+                    throw new Exception(errorData?.message);
+                }
             }
-            else
+            catch (HttpRequestException ex)
             {
-                string responseString = response.Content.ReadAsStringAsync().Result;
-                Console.WriteLine(responseString);
-                dynamic? errorData = JsonConvert.DeserializeObject(responseString);
-
-                throw new Exception(errorData?.message);
-            }            
+                throw new NoInternetException("Došlo k problému s komunikáciou medzi aplikácou a serverom.");
+            }
+            catch (ApiChangedException ex)
+            {
+                throw new ApiChangedException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
     }
 }

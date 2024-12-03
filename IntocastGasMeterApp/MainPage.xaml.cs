@@ -75,63 +75,91 @@ namespace IntocastGasMeterApp
 
         public void DeviceSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // Get the ComboBox reference
-            ComboBox comboBox = sender as ComboBox;
-
-            // Get the selected item
-            if (comboBox.SelectedItem is ComboBoxItem selectedItem)
+            try
             {
-                // Access the content of the selected ComboBoxItem
-                string selectedContent = selectedItem.Content.ToString();
-                this.api.SelectedDevice = selectedContent;
+                // Get the ComboBox reference
+                ComboBox comboBox = sender as ComboBox;
 
-                Device selectedDevice = null;
-                if (selectedContent != Device.COMBINED_DEVICE_NUMBER)
+                // Get the selected item
+                if (comboBox.SelectedItem is ComboBoxItem selectedItem)
                 {
-                    selectedDevice = Device.Get(selectedContent);
+                    // Access the content of the selected ComboBoxItem
+                    string selectedContent = selectedItem.Content.ToString();
+                    this.api.SelectedDevice = selectedContent;
+
+                    Device selectedDevice = null;
+                    if (selectedContent != Device.COMBINED_DEVICE_NUMBER)
+                    {
+                        selectedDevice = Device.Get(selectedContent);
+                    }
+                    else
+                    {
+                        selectedDevice = Device.Combine(Device.devices.ToArray());
+                        Device.combinedDevice = selectedDevice;
+                    }
+                    this.data.UpdateBarChartData(selectedDevice);
+                    this.data.UpdateLineChartData(selectedDevice);
+                    this.data.UpdateLabels(selectedDevice);
                 }
-                else
-                {
-                    selectedDevice = Device.Combine(Device.devices.ToArray());
-                    Device.combinedDevice = selectedDevice;
-                }
-                this.data.UpdateBarChartData(selectedDevice);
-                this.data.UpdateLineChartData(selectedDevice);
-                this.data.UpdateLabels(selectedDevice);
             }
+            catch (Exception ex)
+            {
+                data.HandleException(ex);
+            }
+
         }
 
         private void ChangeDateToday(object sender, RoutedEventArgs e)
         {
-            DateTime today = data.MeasureStart;
-            data.SetCallTimer(1000 * 60);
-            this.data.ChangeChartsToDate(today);
-            this.data.UpdateStatus("OK", "", Colors.LimeGreen);
+            try
+            {
+                DateTime today = data.MeasureStart;
+                data.SetCallTimer(1000 * 60);
+                this.data.ChangeChartsToDate(today);
+            }
+            catch (Exception ex)
+            {
+                data.HandleException(ex);
+            }
+
         }
 
         private void ChangeDateAny(object sender, SelectionChangedEventArgs e)
         {
-            DatePicker datePicker = sender as DatePicker;
-            DateTime? selectedDate = datePicker.SelectedDate;
-
-            if (selectedDate.HasValue)
+            try
             {
-                // Use the selected date
-                DateTime date = selectedDate.Value;
-                DateTime measureStart = this.data.MeasureStart;
-                date = new DateTime(date.Year, date.Month, date.Day, measureStart.Hour, measureStart.Minute, 0);
+                DatePicker datePicker = sender as DatePicker;
+                DateTime? selectedDate = datePicker.SelectedDate;
 
-                if (date == this.data.MeasureStart)
+                if (selectedDate.HasValue)
                 {
-                    this.ChangeDateToday(sender, e);
-                }
-                else
-                {
-                    data.StopCallTimer();
-                    this.data.ChangeChartsToDate(date);
-                    this.data.UpdateStatus("Historické údaje", "Pri prezeraní historických dát da neobnovujú aktuálne údaje.", Colors.Orange);
+                    // Use the selected date
+                    DateTime date = selectedDate.Value;
+                    DateTime measureStart = this.data.MeasureStart;
+                    date = new DateTime(date.Year, date.Month, date.Day, measureStart.Hour, measureStart.Minute, 0);
+
+                    if (date == this.data.MeasureStart)
+                    {
+                        this.ChangeDateToday(sender, e);
+                    }
+                    else
+                    {
+                        data.StopCallTimer();
+                        this.data.ChangeChartsToDate(date);
+                        this.data.UpdateStatus("Historické údaje", "Pri prezeraní historických dát da neobnovujú aktuálne údaje.", Colors.Orange);
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                data.HandleException(ex);
+            }
+        }
+
+        private void ToggleAlarm(object sender, RoutedEventArgs e)
+        {
+            if (data.IsAlarmOn) data.StopAlarm();
+            else data.StartAlarm();
         }
     }
 }

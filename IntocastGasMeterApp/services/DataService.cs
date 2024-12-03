@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
+using System.Media;
 using System.Runtime.CompilerServices;
 using System.Security.Permissions;
 using System.Text;
@@ -34,6 +35,9 @@ namespace IntocastGasMeterApp.services
 
         public DateTime MeasureStart { get; set; }
         public bool ShowingHistoricalData { get; set; }
+
+        public event EventHandler<bool>? AlarmEvent;
+        public bool IsAlarmOn { get; set; }
 
         // dynamic output label variables
         private string _accumulatedUsageLabel;
@@ -229,6 +233,10 @@ namespace IntocastGasMeterApp.services
                             UpdateStatus("Chýbajúce dáta", "Za posledných 10 minút neprišli žiadne nové dáta. Zobrazené údaje nemusia byť aktuálne.", Colors.Orange);
                         }
                     }
+                    else
+                    {
+                        UpdateStatus("OK", "", Colors.LimeGreen);
+                    }
 
                     device.LastDataQuery = new DateTime(now.Ticks);
                     foreach (var item in measurements)
@@ -255,76 +263,66 @@ namespace IntocastGasMeterApp.services
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                UpdateStatus("Chyba", ex.Message, Colors.Red);
+                HandleException(ex);
             }
         }
 
         public void ChangeChartsToDate(DateTime date)
         {
-            try
+            MeasurementsRecord[][] measurementsArray = new MeasurementsRecord[Device.devices.Count][];
+            int i = 0;
+            foreach (Device device in Device.devices)
             {
-                MeasurementsRecord[][] measurementsArray = new MeasurementsRecord[Device.devices.Count][];
-                int i = 0;
-                foreach (Device device in Device.devices)
-                {
-                    // start of measurements
+                // start of measurements
 
-                    MeasurementsRecord[] measurements = api.GetDeviceData(api.SessionId, device.DeviceNumber, date, date.AddHours(23).AddMinutes(59));
-                    measurementsArray[i] = measurements;
-                    i++;
-                }
-
-                int[] counts = new int[Device.devices.Count];
-                i = 0;
-                foreach (var item in measurementsArray)
-                {
-                    counts[i] = item.Length;
-                    i++;
-                }
-                // if all counts are 0, return;
-                if (counts.All(count => count == 0))
-                {
-                    MessageBox.Show("Pre zvolený dátum neexistujú žiadne merania");
-                    return;
-                }
-
-                i = 0;
-                foreach (Device device in Device.devices) { 
-                    device.ResetDevice(date);
-                    MeasurementsRecord[] measurements = measurementsArray[i];
-                    foreach (var item in measurements)
-                    {
-                        device.HandleNewRecord(item);
-                    }
-
-                    Console.WriteLine("Device: " + device.DeviceNumber + ", number of data: " + device.NumberOfRecords.ToString());
-                    device.AddPartialRecords();
-                    i++;
-                }
-
-                this.ClearDataLists();
-                string selectedDeviceNumber = api.SelectedDevice;
-                Device selectedDevice = null;
-                if (selectedDeviceNumber != Device.COMBINED_DEVICE_NUMBER)
-                {
-                    selectedDevice = Device.Get(selectedDeviceNumber);
-                }
-                else
-                {
-                    selectedDevice = Device.Combine(Device.devices.ToArray());
-                    Device.combinedDevice = selectedDevice;
-                }
-                this.UpdateBarChartData(selectedDevice);
-                this.UpdateLineChartData(selectedDevice);
-                this.UpdateLabels(selectedDevice);
+                MeasurementsRecord[] measurements = api.GetDeviceData(api.SessionId, device.DeviceNumber, date, date.AddHours(23).AddMinutes(59));
+                measurementsArray[i] = measurements;
+                i++;
             }
-            catch (Exception ex)
+
+            int[] counts = new int[Device.devices.Count];
+            i = 0;
+            foreach (var item in measurementsArray)
             {
-                Console.WriteLine(ex.Source);
-                Console.WriteLine(ex.StackTrace);
-                Console.WriteLine(ex.Message);
+                counts[i] = item.Length;
+                i++;
             }
+            // if all counts are 0, return;
+            if (counts.All(count => count == 0))
+            {
+                throw new NoDataAvailableException("Pre zvolený dátum neexistujú žiadne merania");
+            }
+
+            i = 0;
+            foreach (Device device in Device.devices)
+            {
+                device.ResetDevice(date);
+                MeasurementsRecord[] measurements = measurementsArray[i];
+                foreach (var item in measurements)
+                {
+                    device.HandleNewRecord(item);
+                }
+
+                Console.WriteLine("Device: " + device.DeviceNumber + ", number of data: " + device.NumberOfRecords.ToString());
+                device.AddPartialRecords();
+                i++;
+            }
+
+            this.ClearDataLists();
+            string selectedDeviceNumber = api.SelectedDevice;
+            Device selectedDevice = null;
+            if (selectedDeviceNumber != Device.COMBINED_DEVICE_NUMBER)
+            {
+                selectedDevice = Device.Get(selectedDeviceNumber);
+            }
+            else
+            {
+                selectedDevice = Device.Combine(Device.devices.ToArray());
+                Device.combinedDevice = selectedDevice;
+            }
+            this.UpdateBarChartData(selectedDevice);
+            this.UpdateLineChartData(selectedDevice);
+            this.UpdateLabels(selectedDevice);
         }
 
         public void UpdateStatus(string status, string message, System.Windows.Media.Color color)
@@ -336,6 +334,43 @@ namespace IntocastGasMeterApp.services
                 StatusMessage = message;
                 StatusColor = new SolidColorBrush(color);
             });
+        }
+
+        public void StartAlarm()
+        {
+            IsAlarmOn = true;
+            AlarmEvent?.Invoke(this, true);
+        }
+
+        public void StopAlarm()
+        {
+            IsAlarmOn = false;
+            AlarmEvent?.Invoke(this, false);
+        }
+
+
+        public void HandleException(Exception ex)
+        {
+            if (ex is NoInternetException)
+            {
+                UpdateStatus("Chyba", ex.Message, Colors.Crimson);
+            }
+            else if (ex is NoDataAvailableException)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            else if (ex is BadLoginException)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            else if (ex is ApiChangedException)
+            {
+                UpdateStatus("Chyba", ex.Message, Colors.Crimson);
+            }
+            else
+            {
+                UpdateStatus("Chyba", "Neznáma chyba. Kontaktujte developera s touto správou: " + ex.Message, Colors.Crimson);
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

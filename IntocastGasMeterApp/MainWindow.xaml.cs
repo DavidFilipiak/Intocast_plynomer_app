@@ -20,6 +20,8 @@ using System.Configuration;
 using IntocastGasMeterApp.models;
 using Newtonsoft.Json.Linq;
 using System.Timers;
+using System.Threading;
+using System.Media;
 
 
 namespace IntocastGasMeterApp
@@ -31,12 +33,17 @@ namespace IntocastGasMeterApp
     {
         private ApiService api;
         private DataService data;
+
+        private SoundPlayer _soundPlayer;
         public MainWindow()
         {
             this.api = ApiService.GetInstance();
             this.data = DataService.GetInstance();
 
             InitializeComponent();
+
+            _soundPlayer = new SoundPlayer("Assets/alarm.wav");
+            data.AlarmEvent += this.ToggleAlarm;
 
             string sessionId = api.SessionId;
             this.api.AuthResultEvent += this.onLoginResult;
@@ -61,171 +68,148 @@ namespace IntocastGasMeterApp
 
         private void onLoginResult(object sender, LoginStatus result)
         {
-            if (result is LoginStatus.LOGIN_SUCCESS)
-            {
-                this.loadMasterData(false);
-                this.loadInitialDeviceData();
-                data.SetCallTimer(1000 * 60);
-                //this.TestLoadData();
-                navigateToMainPage();
-            }
-            else if (result is LoginStatus.LOGIN_FAILURE)
-            {
-                Console.WriteLine("Login failed");
-            }
-            else if (result is LoginStatus.LOGOUT_SUCCESS)
-            {
-                Console.WriteLine("Logout success");
-                AuthContent.Visibility = Visibility.Visible;
-                MainFrame.Visibility = Visibility.Hidden;
-                data.StopCallTimer();
-                api.ClearSession();
-                data.ClearDataLists();
-                foreach (Device device in Device.devices)
-                {
-                    device.ResetDevice();
-                }
-            }
-        }
-
-        private void loadMasterData(bool retry)
-        {
-            MasterData[] masterData = []; 
             try
             {
-                masterData = this.api.GetMasterData(this.api.SessionId);
-
-                // get the device numbers
-                List<string> deviceNumbers = new List<string>();
-                List<string> customers = new List<string>();
-                foreach (var item in masterData)
+                if (result is LoginStatus.LOGIN_SUCCESS)
                 {
-                    if (item.leaf)
-                    {
-                        deviceNumbers.Add(item.deviceNumber);
-                    }
-                    else
-                    {
-                        customers.Add(item.customerId);
-                    }
+                    this.loadMasterData();
+                    this.loadInitialDeviceData();
+                    data.SetCallTimer(1000 * 60);
+                    //this.TestLoadData();
+                    navigateToMainPage();
                 }
-                this.api.DEVICE_NUMBERS = deviceNumbers.ToArray();
-                this.api.SelectedDevice = this.api.DEVICE_NUMBERS[0];
-                this.api.CUSTOMER_ID = customers[0];
-
-                foreach (string deviceNumber in this.api.DEVICE_NUMBERS)
+                else if (result is LoginStatus.LOGIN_FAILURE)
                 {
-                    Console.WriteLine("Adding device " + deviceNumber);
-                    Device device = new Device(deviceNumber, customers[0]);
-                    Device.devices.Add(device);
+                    Console.WriteLine("Login failed");
+                }
+                else if (result is LoginStatus.LOGOUT_SUCCESS)
+                {
+                    Console.WriteLine("Logout success");
+                    AuthContent.Visibility = Visibility.Visible;
+                    MainFrame.Visibility = Visibility.Hidden;
+                    data.StopCallTimer();
+                    api.ClearSession();
+                    data.ClearDataLists();
+                    foreach (Device device in Device.devices)
+                    {
+                        device.ResetDevice();
+                    }
                 }
             }
             catch (Exception ex)
             {
-                if (retry)
+                Console.WriteLine(ex.Message);
+                data.HandleException(ex);
+            }
+
+        }
+
+        private void loadMasterData()
+        {
+            MasterData[] masterData = [];
+            masterData = this.api.GetMasterData(this.api.SessionId);
+
+            // get the device numbers
+            List<string> deviceNumbers = new List<string>();
+            List<string> customers = new List<string>();
+            foreach (var item in masterData)
+            {
+                if (item.leaf)
                 {
-                    this.api.Login(false);
-                    this.loadMasterData(false);
+                    deviceNumbers.Add(item.deviceNumber);
                 }
                 else
                 {
-                    Console.WriteLine("RETRY FAILED");
-                    Console.WriteLine(ex.Message);
-
-                    data.UpdateStatus("Chyba", "Kontaktuje developera s touto chybou: " + ex.Message, Colors.Crimson);
+                    customers.Add(item.customerId);
                 }
-            }            
+            }
+            this.api.DEVICE_NUMBERS = deviceNumbers.ToArray();
+            this.api.SelectedDevice = this.api.DEVICE_NUMBERS[0];
+            this.api.CUSTOMER_ID = customers[0];
+
+            foreach (string deviceNumber in this.api.DEVICE_NUMBERS)
+            {
+                Console.WriteLine("Adding device " + deviceNumber);
+                Device device = new Device(deviceNumber, customers[0]);
+                Device.devices.Add(device);
+            }
         }
 
         private void loadInitialDeviceData()
         {
-            try
+            DateTime measureStart = data.MeasureStart;
+
+            foreach (Device device in Device.devices)
             {
-                DateTime measureStart = data.MeasureStart;
+                // start of measurements
+                Console.WriteLine("device: " + device.DeviceNumber);
 
-                foreach (Device device in Device.devices)
+                MeasurementsRecord[] measurements = api.GetDeviceData(api.SessionId, device.DeviceNumber, measureStart, DateTime.Now);
+
+                foreach (var item in measurements)
                 {
-                    // start of measurements
-                    Console.WriteLine("device: " + device.DeviceNumber);
-
-                    MeasurementsRecord[] measurements = api.GetDeviceData(api.SessionId, device.DeviceNumber, measureStart, DateTime.Now);
-
-                    foreach (var item in measurements)
-                    {
-                        device.HandleNewRecord(item);
-                    }
-
-                    // add possible empty slots
-                    for (DateTime time = device.LastDataUpdateSlot.AddMinutes(5); time < DateTime.Now.AddMinutes(-5); time = time.AddMinutes(5))
-                    {
-                        device.LastDataUpdateSlot = time;
-                        if (device.IsActive)
-                        {
-                            data.UpdateStatus("Chýbajúce dáta", "Za posledných 10 minút neprišli žiadne nové dáta. Zobrazené údaje nemusia byť aktuálne.", Colors.Orange);
-                        }
-                    }
-
-                    device.LastDataQuery = DateTime.Now;
-
-                    Console.WriteLine("Device: " + device.DeviceNumber + ", number of data: " + device.NumberOfRecords.ToString());
-                    device.AddPartialRecords();
+                    device.HandleNewRecord(item);
                 }
 
+                // add possible empty slots
+                for (DateTime time = device.LastDataUpdateSlot.AddMinutes(5); time < DateTime.Now.AddMinutes(-5); time = time.AddMinutes(5))
+                {
+                    device.LastDataUpdateSlot = time;
+                    if (device.IsActive)
+                    {
+                        data.UpdateStatus("Chýbajúce dáta", "Za posledných 10 minút neprišli žiadne nové dáta. Zobrazené údaje nemusia byť aktuálne.", Colors.Orange);
+                    }
+                }
 
-                //Device combined = Device.Combine(Device.devices.ToArray());
-               // Device.devices.Add(combined);
+                device.LastDataQuery = DateTime.Now;
+
+                Console.WriteLine("Device: " + device.DeviceNumber + ", number of data: " + device.NumberOfRecords.ToString());
+                device.AddPartialRecords();
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Source);
-                Console.WriteLine(ex.StackTrace);
-                Console.WriteLine(ex.Message);
+        }
 
-                data.UpdateStatus("Chyba", "Kontaktuje developera s touto chybou: " + ex.Message, Colors.Crimson);
+        public void ToggleAlarm(object sender, bool alarmOn)
+        {
+            if (alarmOn)
+            {
+                _soundPlayer.PlayLooping();
+            }
+            else
+            {
+                _soundPlayer.Stop();
             }
         }
 
 
-
-
+        // -------------------
         // Test method for fetching data
+        // -------------------
 
         private int MinuteOffset { get; set; }
         private void TestLoadData()
         {
             MinuteOffset = 5;  //23 hours
 
-            try
-            {
-                DateTime start = data.MeasureStart;
-                DateTime now = start.AddMinutes(MinuteOffset);
+            DateTime start = data.MeasureStart;
+            DateTime now = start.AddMinutes(MinuteOffset);
 
-                foreach (Device device in Device.devices)
+            foreach (Device device in Device.devices)
+            {
+                MeasurementsRecord[] measurements = api.GetDeviceData(api.SessionId, device.DeviceNumber, start, now);
+
+                foreach (var item in measurements)
                 {
-                    MeasurementsRecord[] measurements = api.GetDeviceData(api.SessionId, device.DeviceNumber, start, now);
-
-                    foreach (var item in measurements)
-                    {
-                        device.HandleNewRecord(item);
-                    }
-
-                    // add possible empty slots
-                    for (DateTime time = device.LastDataUpdateSlot.AddMinutes(5); time < now.AddMinutes(-5); time = time.AddMinutes(5))
-                    {
-                        device.LastDataUpdateSlot = time;
-                        data.UpdateStatus("Chýbajúce dáta", "Za posledných 10 minút neprišli žiadne nové dáta. Zobrazené údaje nemusia byť aktuálne.", Colors.Orange);
-                    }
-
-                    device.LastDataQuery = now;
+                    device.HandleNewRecord(item);
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Source);
-                Console.WriteLine(ex.StackTrace);
-                Console.WriteLine(ex.Message);
 
-                data.UpdateStatus("Chyba", "Kontaktuje developera s touto chybou: " + ex.Message, Colors.Crimson);
+                // add possible empty slots
+                for (DateTime time = device.LastDataUpdateSlot.AddMinutes(5); time < now.AddMinutes(-5); time = time.AddMinutes(5))
+                {
+                    device.LastDataUpdateSlot = time;
+                    data.UpdateStatus("Chýbajúce dáta", "Za posledných 10 minút neprišli žiadne nové dáta. Zobrazené údaje nemusia byť aktuálne.", Colors.Orange);
+                }
+
+                device.LastDataQuery = now;
             }
 
             System.Timers.Timer timer = new System.Timers.Timer();
@@ -293,7 +277,8 @@ namespace IntocastGasMeterApp
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                data.UpdateStatus("Chyba", "Kontaktuje developera s touto chybou: " + ex.Message, Colors.Crimson);
+                data.HandleException(ex);
+                //data.UpdateStatus("Chyba", "Kontaktuje developera s touto chybou: " + ex.Message, Colors.Crimson);
             }
         }
     }
