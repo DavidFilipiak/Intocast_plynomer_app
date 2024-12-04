@@ -23,6 +23,8 @@ namespace IntocastGasMeterApp
     public partial class AuthControl : UserControl
     {
         private ApiService api;
+        private DataService data;
+
         private string _userName = string.Empty;
         private string _password = string.Empty;
 
@@ -44,6 +46,7 @@ namespace IntocastGasMeterApp
         public AuthControl()
         {
             this.api = ApiService.GetInstance();
+            this.data = DataService.GetInstance();
 
             InitializeComponent();
         }
@@ -60,7 +63,7 @@ namespace IntocastGasMeterApp
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                this.data.HandleException(ex);
             }
 
         }

@@ -8,6 +8,8 @@ using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 using IntocastGasMeterApp.models;
+using System.ComponentModel;
+using System.DirectoryServices.ActiveDirectory;
 
 namespace IntocastGasMeterApp.services
 {
@@ -22,6 +24,8 @@ namespace IntocastGasMeterApp.services
 
     internal class ApiService
     {
+        private LoggerService logger;
+
         private const string SPP_API_URL = "https://gasapi.spp-distribucia.sk/Website/sppdapi/";
         private string _sessionId = String.Empty;
         public string[] DEVICE_NUMBERS { get; set; }
@@ -47,6 +51,8 @@ namespace IntocastGasMeterApp.services
         private static ApiService? instance = null;
         private ApiService()
         {
+            this.logger = LoggerService.GetInstance();
+
             this.client = new()
             {
                 BaseAddress = new Uri(SPP_API_URL)
@@ -100,6 +106,8 @@ namespace IntocastGasMeterApp.services
 
         public bool CheckLogin(string username, string password)
         {
+            logger.LogInfo("Checking login credentials for user " + username);
+
             string savedUsername = Utils.Decrypt(Properties.Settings.Default.username);
             string savedPassword = Utils.Decrypt(Properties.Settings.Default.password);
 
@@ -122,6 +130,8 @@ namespace IntocastGasMeterApp.services
         {
             try
             {
+                logger.LogInfo("Logging in user " + username + " in main page: " + isMain.ToString());
+
                 if (!isMain)
                 {
                     bool loginCheck = this.CheckLogin(username, password);
@@ -197,6 +207,8 @@ namespace IntocastGasMeterApp.services
         {
             try
             {
+                logger.LogInfo("Logging out user.");
+
                 string sessionId = this.SessionId;
 
                 string queryString = BuildQueryString(
@@ -240,6 +252,8 @@ namespace IntocastGasMeterApp.services
         {
             try
             {
+                logger.LogInfo("Loading master data");
+
                 string queryString = BuildQueryString(
                     new Dictionary<string, string>
                     {
@@ -282,6 +296,8 @@ namespace IntocastGasMeterApp.services
         {
             try
             {
+                logger.LogInfo("Loading device data for device " + deviceNumber + " for dates from " + from.ToString(logger.LOG_DATE_FORMAT) + " to " + to.ToString(logger.LOG_DATE_FORMAT));
+
                 string customerId = this.CUSTOMER_ID;
                 string queryString = BuildQueryString(
                     new Dictionary<string, string>

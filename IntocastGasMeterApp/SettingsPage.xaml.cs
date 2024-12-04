@@ -23,9 +23,10 @@ namespace IntocastGasMeterApp
     public partial class SettingsPage : Page
     {
         private ApiService api;
-
+        private LoggerService logger;
         public SettingsPage()
         {
+            this.logger = LoggerService.GetInstance();
             this.api = ApiService.GetInstance();
             this.api.AuthResultEvent += this.onLoginResult;
 
@@ -111,6 +112,8 @@ namespace IntocastGasMeterApp
             Properties.Settings.Default.measure_start = measureStart;
             Properties.Settings.Default.interval = interval;
 
+
+            logger.LogInfo("Settings saved");
             Properties.Settings.Default.Save();
         }
 

@@ -22,6 +22,7 @@ namespace IntocastGasMeterApp.services
 
         private static DataService instance = null;
         private ApiService api;
+        private LoggerService logger;
         private System.Timers.Timer timer;
 
         // these values are displayed in the bar chart and line charts
@@ -76,6 +77,7 @@ namespace IntocastGasMeterApp.services
         private DataService()
         {
             this.api = ApiService.GetInstance();
+            this.logger = LoggerService.GetInstance();
 
             timer = new System.Timers.Timer();
             timer.Elapsed += OnTimedEvent;
@@ -203,11 +205,15 @@ namespace IntocastGasMeterApp.services
             Console.WriteLine("Timer: " + DateTime.Now.ToString());
             try
             {
+                logger.LogInfo("Triggering API call timer at " + DateTime.Now.ToString(logger.LOG_DATE_FORMAT));
+
                 DateTime now = DateTime.Now;
                 Device[] devices = Device.devices.Where(device => device.DeviceNumber != Device.COMBINED_DEVICE_NUMBER).ToArray();
 
                 if (now > MeasureStart.AddHours(24))
                 {
+                    logger.LogInfo("Starting new measure day.");
+
                     ClearDataLists();
                     foreach (Device device in Device.devices)
                     {
@@ -223,6 +229,8 @@ namespace IntocastGasMeterApp.services
                     // start of measurement
                     MeasurementsRecord[] measurements = [];
                     measurements = api.GetDeviceData(api.SessionId, device.DeviceNumber, now.AddMinutes(-5), now);
+
+                    logger.LogInfo("Received " + measurements.Length + " records for device " + device.DeviceNumber);
 
                     if (now >= device.LastDataUpdateSlot.AddMinutes(10))
                     {
@@ -269,6 +277,8 @@ namespace IntocastGasMeterApp.services
 
         public void ChangeChartsToDate(DateTime date)
         {
+            this.logger.LogInfo("Changing charts to date: " + date.ToString(logger.LOG_DATE_FORMAT));
+
             MeasurementsRecord[][] measurementsArray = new MeasurementsRecord[Device.devices.Count][];
             int i = 0;
             foreach (Device device in Device.devices)
@@ -338,12 +348,14 @@ namespace IntocastGasMeterApp.services
 
         public void StartAlarm()
         {
+            logger.LogWarning("Alarm started.");
             IsAlarmOn = true;
             AlarmEvent?.Invoke(this, true);
         }
 
         public void StopAlarm()
         {
+            logger.LogInfo("Alarm stopped.");
             IsAlarmOn = false;
             AlarmEvent?.Invoke(this, false);
         }
@@ -351,6 +363,7 @@ namespace IntocastGasMeterApp.services
 
         public void HandleException(Exception ex)
         {
+            string message = ex.Message;
             if (ex is NoInternetException)
             {
                 UpdateStatus("Chyba", ex.Message, Colors.Crimson);
@@ -369,8 +382,11 @@ namespace IntocastGasMeterApp.services
             }
             else
             {
-                UpdateStatus("Chyba", "Neznáma chyba. Kontaktujte developera s touto správou: " + ex.Message, Colors.Crimson);
+                message = "Neznáma chyba. Kontaktujte developera s touto správou: " + ex.Message;
+                UpdateStatus("Chyba", message, Colors.Crimson);
             }
+
+            logger.LogError(message);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

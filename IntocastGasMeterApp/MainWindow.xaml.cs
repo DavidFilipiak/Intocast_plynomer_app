@@ -33,12 +33,16 @@ namespace IntocastGasMeterApp
     {
         private ApiService api;
         private DataService data;
+        private LoggerService logger;
 
         private SoundPlayer _soundPlayer;
         public MainWindow()
         {
             this.api = ApiService.GetInstance();
             this.data = DataService.GetInstance();
+            this.logger = LoggerService.GetInstance();
+
+            this.logger.LogInfo("App opened");
 
             InitializeComponent();
 
@@ -72,6 +76,8 @@ namespace IntocastGasMeterApp
             {
                 if (result is LoginStatus.LOGIN_SUCCESS)
                 {
+                    this.logger.LogInfo("Successful user login");
+
                     this.loadMasterData();
                     this.loadInitialDeviceData();
                     data.SetCallTimer(1000 * 60);
@@ -80,6 +86,7 @@ namespace IntocastGasMeterApp
                 }
                 else if (result is LoginStatus.LOGIN_FAILURE)
                 {
+                    this.logger.LogInfo("App login failed.");
                     Console.WriteLine("Login failed");
                 }
                 else if (result is LoginStatus.LOGOUT_SUCCESS)
@@ -94,6 +101,8 @@ namespace IntocastGasMeterApp
                     {
                         device.ResetDevice();
                     }
+
+                    this.logger.LogInfo("Successful user logout.");
                 }
             }
             catch (Exception ex)
@@ -178,6 +187,10 @@ namespace IntocastGasMeterApp
             {
                 _soundPlayer.Stop();
             }
+        }
+        private void MainWindow_Closed(object sender, EventArgs e)
+        {
+            logger.LogInfo("App closed");
         }
 
 
