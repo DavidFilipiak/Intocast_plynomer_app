@@ -5,6 +5,8 @@ VisualStudioVersion = 17.11.35312.102
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntocastGasMeterApp", "IntocastGasMeterApp.csproj", "{C8901E6B-C1D2-4E07-AD2E-1A6BAEC72E12}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "..\UnitTests\UnitTests.csproj", "{650786FE-4D96-4057-AB69-262010D9D3CD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{C8901E6B-C1D2-4E07-AD2E-1A6BAEC72E12}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C8901E6B-C1D2-4E07-AD2E-1A6BAEC72E12}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C8901E6B-C1D2-4E07-AD2E-1A6BAEC72E12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{650786FE-4D96-4057-AB69-262010D9D3CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{650786FE-4D96-4057-AB69-262010D9D3CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{650786FE-4D96-4057-AB69-262010D9D3CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{650786FE-4D96-4057-AB69-262010D9D3CD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

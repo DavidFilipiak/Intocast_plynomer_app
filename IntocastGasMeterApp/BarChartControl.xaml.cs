@@ -91,9 +91,15 @@ namespace IntocastGasMeterApp
                     int index = point.Index;
                     Device selectedDevice = Device.Get(api.SelectedDevice);
                     MeasurementsRecord record = selectedDevice.Slots.Values.ElementAt(index);
+                    Console.Write(selectedDevice.DeviceNumber + " " + index + " ");
+                    Console.WriteLine(record is not null ? record.IsPartial.ToString() : "null");
                     if (record is null || record.IsPartial)
                     {
                         point.Visual.Fill = new SolidColorPaint(new SKColor(84, 84, 84));
+                    }
+                    else
+                    {
+                        point.Visual.Fill = new SolidColorPaint(new SKColor(0, 0, 255));
                     }
 
                 })

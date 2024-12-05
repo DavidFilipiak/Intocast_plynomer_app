@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace IntocastGasMeterApp.services
 {
-    class Utils
+    public class Utils
     {
         private static Utils instance = null;
         private Utils()

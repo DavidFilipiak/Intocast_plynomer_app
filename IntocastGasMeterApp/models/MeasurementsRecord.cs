@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace IntocastGasMeterApp.models
 {
-    class MeasurementsRecord
+    public class MeasurementsRecord
     {
         public static readonly string[] KNOWN_CSV_HEADERS =
         {

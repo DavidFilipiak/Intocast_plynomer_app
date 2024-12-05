@@ -99,7 +99,7 @@ namespace IntocastGasMeterApp
                     data.ClearDataLists();
                     foreach (Device device in Device.devices)
                     {
-                        device.ResetDevice();
+                        device.ResetDevice(data.MeasureStart);
                     }
 
                     this.logger.LogInfo("Successful user logout.");
@@ -139,7 +139,7 @@ namespace IntocastGasMeterApp
             foreach (string deviceNumber in this.api.DEVICE_NUMBERS)
             {
                 Console.WriteLine("Adding device " + deviceNumber);
-                Device device = new Device(deviceNumber, customers[0]);
+                Device device = new Device(deviceNumber, customers[0], data.MeasureStart);
                 Device.devices.Add(device);
             }
         }
@@ -147,6 +147,7 @@ namespace IntocastGasMeterApp
         private void loadInitialDeviceData()
         {
             DateTime measureStart = data.MeasureStart;
+            DateTime now = DateTime.Now;
 
             foreach (Device device in Device.devices)
             {
@@ -154,26 +155,24 @@ namespace IntocastGasMeterApp
                 Console.WriteLine("device: " + device.DeviceNumber);
 
                 MeasurementsRecord[] measurements = api.GetDeviceData(api.SessionId, device.DeviceNumber, measureStart, DateTime.Now);
+                device.HandleNewRecords(now, measurements);
 
-                foreach (var item in measurements)
+                if (now >= device.LastRealDataUpdate.AddMinutes(5))
                 {
-                    device.HandleNewRecord(item);
-                }
-
-                // add possible empty slots
-                for (DateTime time = device.LastDataUpdateSlot.AddMinutes(5); time < DateTime.Now.AddMinutes(-5); time = time.AddMinutes(5))
-                {
-                    device.LastDataUpdateSlot = time;
                     if (device.IsActive)
                     {
                         data.UpdateStatus("Chýbajúce dáta", "Za posledných 10 minút neprišli žiadne nové dáta. Zobrazené údaje nemusia byť aktuálne.", Colors.Orange);
                     }
                 }
+                else
+                {
+                    data.UpdateStatus("OK", "", Colors.LimeGreen);
+                }
 
                 device.LastDataQuery = DateTime.Now;
 
                 Console.WriteLine("Device: " + device.DeviceNumber + ", number of data: " + device.NumberOfRecords.ToString());
-                device.AddPartialRecords();
+                device.AddPartialRecords(DateTime.Now);
             }
         }
 
@@ -209,20 +208,19 @@ namespace IntocastGasMeterApp
             foreach (Device device in Device.devices)
             {
                 MeasurementsRecord[] measurements = api.GetDeviceData(api.SessionId, device.DeviceNumber, start, now);
+                device.HandleNewRecords(now, measurements);
 
-                foreach (var item in measurements)
+                if (now >= device.LastRealDataUpdate.AddMinutes(5))
                 {
-                    device.HandleNewRecord(item);
+                    if (device.IsActive)
+                    {
+                        data.UpdateStatus("Chýbajúce dáta", "Za posledných 10 minút neprišli žiadne nové dáta. Zobrazené údaje nemusia byť aktuálne.", Colors.Orange);
+                    }
                 }
-
-                // add possible empty slots
-                for (DateTime time = device.LastDataUpdateSlot.AddMinutes(5); time < now.AddMinutes(-5); time = time.AddMinutes(5))
+                else
                 {
-                    device.LastDataUpdateSlot = time;
-                    data.UpdateStatus("Chýbajúce dáta", "Za posledných 10 minút neprišli žiadne nové dáta. Zobrazené údaje nemusia byť aktuálne.", Colors.Orange);
+                    data.UpdateStatus("OK", "", Colors.LimeGreen);
                 }
-
-                device.LastDataQuery = now;
             }
 
             System.Timers.Timer timer = new System.Timers.Timer();
@@ -246,7 +244,7 @@ namespace IntocastGasMeterApp
                     data.ClearDataLists();
                     foreach (Device device in Device.devices)
                     {
-                        device.ResetDevice();
+                        device.ResetDevice(now);
                     }
                     data.MeasureStart = data.MeasureStart.AddHours(24);
                     MinuteOffset = 0;
@@ -260,19 +258,19 @@ namespace IntocastGasMeterApp
 
                     measurements = api.GetDeviceData(api.SessionId, device.DeviceNumber, now.AddMinutes(-5), now);
                     Console.WriteLine($"Fetched {measurements.Length} records");
-                    if (now > device.LastDataUpdateSlot.AddMinutes(10))
+                    device.HandleNewRecords(now, measurements);
+
+                    if (now >= device.LastRealDataUpdate.AddMinutes(5))
                     {
-                        device.LastDataUpdateSlot = device.LastDataUpdateSlot.AddMinutes(5);
                         if (device.IsActive)
                         {
                             data.UpdateStatus("Chýbajúce dáta", "Za posledných 10 minút neprišli žiadne nové dáta. Zobrazené údaje nemusia byť aktuálne.", Colors.Orange);
                         }
                     }
-                    device.LastDataQuery = new DateTime(now.Ticks);
-                    foreach (var item in measurements)
+                    else
                     {
-                        device.HandleNewRecord(item);
-                    }                   
+                        data.UpdateStatus("OK", "", Colors.LimeGreen);
+                    }
 
                     MinuteOffset += 1;
                 }

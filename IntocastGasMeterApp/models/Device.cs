@@ -16,7 +16,7 @@ using System.Windows.Media;
 
 namespace IntocastGasMeterApp.models
 {
-    class Device
+    public class Device
     {
         public static List<Device> devices = new List<Device>();
         public static readonly string COMBINED_DEVICE_NUMBER = "Spolu";
@@ -40,14 +40,14 @@ namespace IntocastGasMeterApp.models
 
         public static Device Combine(Device[] devices)
         {
-            Device newDevice = new Device(COMBINED_DEVICE_NUMBER, COMBINED_DEVICE_NUMBER);
             Device sample = devices[0];
+            DateTime timeStart = sample.Slots.Keys.ToList().First();
+            Device newDevice = new Device(COMBINED_DEVICE_NUMBER, COMBINED_DEVICE_NUMBER, timeStart);
 
             // get values for each device
             int numberOfRecords = devices.Max(device => device.NumberOfRecords);
 
             // combine values according to the requirements
-            DateTime timeStart = sample.Slots.Keys.ToList().First();
             DateTime timeEnd = sample.Slots.Keys.ElementAt(numberOfRecords - 1);
             int index = 0;
             for (DateTime key = timeStart; key <= timeEnd; key = key.AddMinutes(5))
@@ -80,14 +80,39 @@ namespace IntocastGasMeterApp.models
         private static MeasurementsRecord GetCombinedRecord(MeasurementsRecord r1, MeasurementsRecord r2)
         {
             // we assume that primary record comes from an Active device, while secondary is from a non-active device
-            MeasurementsRecord primary = r1.IsFromActiveDevice ? r1 : r2;
-            MeasurementsRecord secondary = r1.IsFromActiveDevice ? r2 : r1;
+            MeasurementsRecord primary = null;
+            MeasurementsRecord secondary = null;
+            if (r1.IsFromActiveDevice && r2.IsFromActiveDevice)
+            {
+                if (r1.IsPartial)
+                {
+                    primary = r2;
+                    secondary = r1;
+                }
+                else
+                {
+                    primary = r1;
+                    secondary = r2;
+                }
+            }
+            else if (r1.IsFromActiveDevice)
+            {
+                primary = r1;
+                secondary = r2;
+            }
+            else
+            {
+                primary = r2;
+                secondary = r1;
+            }
 
             MeasurementsRecord output = new MeasurementsRecord();
 
             output.AccumulatedUsage = primary.AccumulatedUsage + secondary.AccumulatedUsage;
             output.ActualUsage = primary.ActualUsage + secondary.ActualUsage;
-            output.Throughput = primary.Throughput + secondary.Throughput;
+            if (primary.Throughput is null) output.Throughput = null;
+            else if (secondary.Throughput is null) output.Throughput = primary.Throughput;
+            else output.Throughput = secondary.Throughput + primary.Throughput;
 
             output.DeviceRaw = primary.DeviceRaw + secondary.DeviceRaw;
             output.DeviceNormal = primary.DeviceNormal + secondary.DeviceNormal;
@@ -109,7 +134,7 @@ namespace IntocastGasMeterApp.models
         public string CustomerId { get; set; }
 
         private const int NUMBER_OF_TIMESLOTS = 24 * 12; // number of 5-minue slots in a day
-        public readonly Dictionary<DateTime, MeasurementsRecord> Slots;
+        public Dictionary<DateTime, MeasurementsRecord> Slots;
 
         public List<double> AccumulatedUsage => GetProperty(record => record.AccumulatedUsage);
         public List<double> ActualUsage => GetProperty(record => record.ActualUsage, false);
@@ -152,27 +177,40 @@ namespace IntocastGasMeterApp.models
         }
 
         public bool IsActive { get; set; }
+        private bool _startsActive;
+        public bool StartsActive { get { return _startsActive; } set { IsActive = value; this._startsActive = value; } }
+        /// <summary>
+        /// Date of the last supposedly occupied slot
+        /// </summary>
         public DateTime LastDataUpdateSlot { get; set; }
+        /// <summary>
+        /// Slot of the last non-null and non-partial record. Ideally increases every 5 minutes.
+        /// </summary>
         public DateTime LastRealDataUpdateSlot { get; set; }
+        /// <summary>
+        /// Date of the last attempted data query. Usually increases every minute.
+        /// </summary>
         public DateTime LastDataQuery { get; set; }
+        /// <summary>
+        /// Date of the last non-null and non-partial record. Ideally increases every 5 minutes.
+        /// </summary>
         public DateTime LastRealDataUpdate { get; set; }
 
-
-        public Device(string deviceNumber, string customerId)
+        public Device(string deviceNumber, string customerId, DateTime measureStart)
         {
             DeviceNumber = deviceNumber;
             CustomerId = customerId;
 
             this.Slots = new Dictionary<DateTime, MeasurementsRecord>();
 
-            DateTime measureStart = DataService.GetInstance().MeasureStart;
             DateTime measureEnd = measureStart.AddHours(24);
             for (DateTime time = measureStart; time < measureEnd; time = time.AddMinutes(5))
             {
                 this.Slots.Add(time, null);
                 Console.WriteLine(time);
             }
-            IsActive = false;
+
+            StartsActive = false;
         }
 
         private List<double> GetProperty(Func<MeasurementsRecord, double> selector, bool overrideDefault = true)
@@ -209,11 +247,31 @@ namespace IntocastGasMeterApp.models
             return list;
         }
 
-        public void HandleNewRecord(MeasurementsRecord record)
+        public void HandleNewRecords(DateTime dateTime, MeasurementsRecord[] measurements)
+        {
+            if (dateTime >= LastRealDataUpdate.AddMinutes(5))
+            {
+                LastDataUpdateSlot = LastDataUpdateSlot.AddMinutes(5);
+                //AddPartialRecords(dateTime);
+            }
+
+            LastDataQuery = new DateTime(dateTime.Ticks);
+            foreach (var item in measurements)
+            {
+                HandleNewRecord(item);
+            }
+            if (measurements.Length == 0)
+            {
+                CheckDeviceActivity(null);
+            }
+
+            AddPartialRecords(dateTime);            
+        }
+
+        private void HandleNewRecord(MeasurementsRecord record)
         {
 
             DateTime measuredTime = record.Date;
-            //DateTime lastUpdate = NumberOfRecords > 0 ? MeasuredTimes.Last() : measuredTime.AddMinutes(-1);
 
             if (measuredTime > LastRealDataUpdate)
             {
@@ -227,90 +285,97 @@ namespace IntocastGasMeterApp.models
 
                 if (!currentSlotExists) return;
 
+                /*
                 if (previousSlotDateTime >= Slots.Keys.ToList().First() && previousSlotExists && previousSlotRecord == null && measuredTime.Minute == 0)
                 {
                     InsertRecord(previousSlotDateTime, record);
                     return;
                 }
+                */
 
-                if (existingRecord == null)
+                if (existingRecord == null || existingRecord.IsPartial)
                 {
                     InsertRecord(slotDateTime, record);
                 }
-
-                //find latest non null record
-                double lastUsage = ActualUsage.Last();
-                double newUsage = record.ActualUsage;
-                if (IsActive && lastUsage == newUsage) IsActive = false;
-                else if (!IsActive && lastUsage != newUsage) IsActive = true;
+                
             }
         }
 
-
         private void InsertRecord(DateTime slot, MeasurementsRecord record)
         {
-            if (record.Date >= new DateTime(2024, 12, 2, 20, 22, 0) && IsActive)
-            {
-
-            }
             double dailyUsage = record.DeviceNormal - record.DeviceNormalArchived;
             double sumUsage = Utils.Sum(ActualUsage.GetRange(0, NumberOfRecords));
             double newUsage = dailyUsage - sumUsage;
-            //newUsage = ActualUsage.Count > 0 ? newUsage - Utils.Sum(ActualUsage.GetRange(0, ActualUsage.Count)) : 0;
-            double aggregatedValue = Utils.Sum(ActualUsage) + newUsage;
-
-            if (IsActive) record.IsFromActiveDevice = true;
-            else record.IsFromActiveDevice = false;
 
             record.ActualUsage = newUsage;
             record.Throughput = newUsage;
             record.AccumulatedUsage = dailyUsage;
 
+            CheckDeviceActivity(record);
+
+            record.IsFromActiveDevice = IsActive;
+
             Slots[slot] = record;
             this.LastDataUpdateSlot = new DateTime(slot.Ticks);
             this.LastRealDataUpdateSlot = new DateTime(slot.Ticks);
             this.LastRealDataUpdate = new DateTime(record.Date.Ticks);
-
-            DataService data = DataService.GetInstance();
-            if (IsActive)
-            {
-                data.UpdateStatus("OK", "", Colors.LimeGreen);
-            }
         }
 
-        public void AddPartialRecords()
+        private void CheckDeviceActivity(MeasurementsRecord? record)
         {
-            for (DateTime time = Slots.Keys.ToList().First(); time <= LastDataUpdateSlot; time = time.AddMinutes(5))
+            if (record is not null && record.ActualUsage == 0 && !record.IsPartial)
+            {
+                // change to inactive
+                IsActive = false;
+            }
+            else if (record is not null && record.ActualUsage > 0 && !record.IsPartial)
+            {
+                // change to active
+                IsActive = true;
+            }
+            // else keep as is
+        }
+
+        public void AddPartialRecords(DateTime until)
+        {
+            for (DateTime time = Slots.Keys.ToList().First(); time <= until; time = time.AddMinutes(5))
             {
                 if (Slots[time] == null)
                 {
-                    MeasurementsRecord previous = Slots[time.AddMinutes(-5)];
                     MeasurementsRecord record = new MeasurementsRecord();
                     record.IsPartial = true;
                     record.Date = new DateTime(time.Ticks);
-                    record.DeviceRaw = previous.DeviceRaw;
-                    record.DeviceNormal = previous.DeviceNormal;
-                    record.DeviceRawArchived = previous.DeviceRawArchived;
-                    record.DeviceNormalArchived = previous.DeviceNormalArchived;
-                    record.ArchiveDate = previous.ArchiveDate;
-                    record.AccumulatedUsage = previous.AccumulatedUsage;
-                    record.ActualUsage = previous.ActualUsage;
-                    record.IsFromActiveDevice = previous.IsFromActiveDevice;
-
+                    record.ActualUsage = 0;
                     record.Temperature = null;
                     record.Pressure = null;
                     record.Throughput = null;
 
+                    if (!Slots.TryGetValue(time.AddMinutes(-5), out MeasurementsRecord previous))
+                    {
+                        // is the very first record
+                        record.DeviceRaw = 0;
+                        record.DeviceNormal = 0;
+                        record.DeviceRawArchived = 0;
+                        record.DeviceNormalArchived = 0;
+                        record.ArchiveDate = new DateTime(time.Ticks);
+                        record.ActualUsage = 0;
+                        record.IsPartial = true;
+                        record.IsFromActiveDevice = StartsActive;
+                    }
+                    else
+                    {
+                        record.DeviceRaw = previous.DeviceRaw;
+                        record.DeviceNormal = previous.DeviceNormal;
+                        record.DeviceRawArchived = previous.DeviceRawArchived;
+                        record.DeviceNormalArchived = previous.DeviceNormalArchived;
+                        record.ArchiveDate = previous.ArchiveDate;
+                        record.AccumulatedUsage = previous.AccumulatedUsage;
+                        record.IsFromActiveDevice = previous.IsFromActiveDevice;
+                    }
+                    
                     Slots[time] = record;
                 }
             }
-        }
-
-        // this should be called when the new 24 hour period starts
-        public void ResetDevice()
-        {
-            DateTime measureStart = DataService.GetInstance().MeasureStart.AddHours(24);
-            this.ResetDevice(measureStart);
         }
 
         public void ResetDevice(DateTime resetDate)

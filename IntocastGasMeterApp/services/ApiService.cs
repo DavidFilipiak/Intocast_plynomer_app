@@ -316,7 +316,7 @@ namespace IntocastGasMeterApp.services
                 if (response.IsSuccessStatusCode)
                 {
                     string responseString = response.Content.ReadAsStringAsync().Result;
-                    //Console.WriteLine(responseString);
+                    Console.WriteLine(responseString);
                     MeasurementsRecord[] records = Utils.parseCSVMeasurements(responseString, ";");
 
                     return records;

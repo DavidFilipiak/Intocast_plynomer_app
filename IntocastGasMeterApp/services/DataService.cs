@@ -217,7 +217,7 @@ namespace IntocastGasMeterApp.services
                     ClearDataLists();
                     foreach (Device device in Device.devices)
                     {
-                        device.ResetDevice();
+                        device.ResetDevice(MeasureStart.AddHours(24));
                     }
                     MeasureStart = MeasureStart.AddHours(24);
                 }
@@ -232,10 +232,10 @@ namespace IntocastGasMeterApp.services
 
                     logger.LogInfo("Received " + measurements.Length + " records for device " + device.DeviceNumber);
 
-                    if (now >= device.LastDataUpdateSlot.AddMinutes(10))
+                    device.HandleNewRecords(now, measurements);
+
+                    if (now >= device.LastRealDataUpdate.AddMinutes(5))
                     {
-                        device.LastDataUpdateSlot = device.LastDataUpdateSlot.AddMinutes(5);
-                        device.AddPartialRecords();
                         if (device.IsActive)
                         {
                             UpdateStatus("Chýbajúce dáta", "Za posledných 10 minút neprišli žiadne nové dáta. Zobrazené údaje nemusia byť aktuálne.", Colors.Orange);
@@ -244,12 +244,6 @@ namespace IntocastGasMeterApp.services
                     else
                     {
                         UpdateStatus("OK", "", Colors.LimeGreen);
-                    }
-
-                    device.LastDataQuery = new DateTime(now.Ticks);
-                    foreach (var item in measurements)
-                    {
-                        device.HandleNewRecord(item);                        
                     }
                 }
 
@@ -306,15 +300,11 @@ namespace IntocastGasMeterApp.services
             i = 0;
             foreach (Device device in Device.devices)
             {
-                device.ResetDevice(date);
+                device.ResetDevice(date);                
                 MeasurementsRecord[] measurements = measurementsArray[i];
-                foreach (var item in measurements)
-                {
-                    device.HandleNewRecord(item);
-                }
+                device.HandleNewRecords(date.AddHours(24).AddMinutes(-5), measurements);
 
                 Console.WriteLine("Device: " + device.DeviceNumber + ", number of data: " + device.NumberOfRecords.ToString());
-                device.AddPartialRecords();
                 i++;
             }
 
