@@ -39,6 +39,7 @@ namespace IntocastGasMeterApp.services
 
         public event EventHandler<bool>? AlarmEvent;
         public bool IsAlarmOn { get; set; }
+        public DateTime LastAlarmTrigger { get; set; }
 
         // dynamic output label variables
         private string _accumulatedUsageLabel;
@@ -125,8 +126,8 @@ namespace IntocastGasMeterApp.services
                 AccumulatedUsageDiffLabel = Math.Round(AgreedUsage - lastRecord.AccumulatedUsage, 2).ToString();
                 TemperatureLabel = Math.Round((double)lastRecord.Temperature, 2).ToString();
                 PressureLabel = Math.Round((double)lastRecord.Pressure, 2).ToString();
-                ThroughputLabel = Math.Round(lastRecord.ActualUsage, 2).ToString();
-                ThroughputDiffLabel = Math.Round(agreedThroughput - lastRecord.ActualUsage, 2).ToString();
+                ThroughputLabel = Math.Round(lastRecord.ActualUsage * 12, 2).ToString();
+                ThroughputDiffLabel = Math.Round(agreedThroughput - (lastRecord.ActualUsage * 12), 2).ToString();
             }
             else
             {
@@ -174,6 +175,36 @@ namespace IntocastGasMeterApp.services
                 Pressure.Add(new ObservableValue(device.Pressure[i]));
                 ActualUsage.Add(new ObservableValue(device.ActualUsage[i]));
                 Throughput.Add(new ObservableValue(device.Throughput[i]));
+            }
+        }
+
+        public void StopAlarm()
+        {
+            logger.LogInfo("Alarm stopped.");
+            IsAlarmOn = false;
+            AlarmEvent?.Invoke(this, false);
+        }
+
+        public void CheckForAlarm(Device device)
+        {
+            DateTime now = DateTime.Now;
+            double setUsage = Properties.Settings.Default.usage_set_max;
+            int index = device.Slots.Keys.ToList().IndexOf(device.LastDataUpdateSlot);
+            MeasurementsRecord record = device.Slots[device.LastDataUpdateSlot];
+            if (record is null || record.IsPartial)
+            {
+                return;
+            }
+            double triggerValue = setUsage / device.Slots.Keys.Count * (index + 1);
+            if (record.AccumulatedUsage > triggerValue)
+            {
+                if (!IsAlarmOn && LastAlarmTrigger.AddHours(1) < now && now > MeasureStart.AddHours(1) && MeasureStart.AddHours(24) > now)
+                {
+                    AlarmEvent?.Invoke(this, true);
+                    LastAlarmTrigger = now;
+                    logger.LogWarning("Alarm triggered.");
+                    IsAlarmOn = true;
+                }
             }
         }
 
@@ -261,6 +292,7 @@ namespace IntocastGasMeterApp.services
                 this.UpdateBarChartData(selectedDevice);
                 this.UpdateLineChartData(selectedDevice);
                 this.UpdateLabels(selectedDevice);
+                this.CheckForAlarm(selectedDevice);
 
             }
             catch (Exception ex)
@@ -304,7 +336,23 @@ namespace IntocastGasMeterApp.services
                 MeasurementsRecord[] measurements = measurementsArray[i];
                 device.HandleNewRecords(date.AddHours(24).AddMinutes(-5), measurements);
 
-                Console.WriteLine("Device: " + device.DeviceNumber + ", number of data: " + device.NumberOfRecords.ToString());
+                if (date == MeasureStart && DateTime.Now >= device.LastRealDataUpdate.AddMinutes(5))
+                {
+                    if (device.IsActive)
+                    {
+                        UpdateStatus("Chýbajúce dáta", "Za posledných 10 minút neprišli žiadne nové dáta. Zobrazené údaje nemusia byť aktuálne.", Colors.Orange);
+                    }
+                }
+                else
+                {
+                    UpdateStatus("OK", "", Colors.LimeGreen);
+                }
+
+                if (MeasureStart == date)
+                {
+                    device.LastDataQuery = DateTime.Now;
+                }
+
                 i++;
             }
 
@@ -323,6 +371,7 @@ namespace IntocastGasMeterApp.services
             this.UpdateBarChartData(selectedDevice);
             this.UpdateLineChartData(selectedDevice);
             this.UpdateLabels(selectedDevice);
+            this.CheckForAlarm(selectedDevice);
         }
 
         public void UpdateStatus(string status, string message, System.Windows.Media.Color color)
@@ -335,21 +384,6 @@ namespace IntocastGasMeterApp.services
                 StatusColor = new SolidColorBrush(color);
             });
         }
-
-        public void StartAlarm()
-        {
-            logger.LogWarning("Alarm started.");
-            IsAlarmOn = true;
-            AlarmEvent?.Invoke(this, true);
-        }
-
-        public void StopAlarm()
-        {
-            logger.LogInfo("Alarm stopped.");
-            IsAlarmOn = false;
-            AlarmEvent?.Invoke(this, false);
-        }
-
 
         public void HandleException(Exception ex)
         {

@@ -91,8 +91,6 @@ namespace IntocastGasMeterApp
                     int index = point.Index;
                     Device selectedDevice = Device.Get(api.SelectedDevice);
                     MeasurementsRecord record = selectedDevice.Slots.Values.ElementAt(index);
-                    Console.Write(selectedDevice.DeviceNumber + " " + index + " ");
-                    Console.WriteLine(record is not null ? record.IsPartial.ToString() : "null");
                     if (record is null || record.IsPartial)
                     {
                         point.Visual.Fill = new SolidColorPaint(new SKColor(84, 84, 84));
@@ -135,24 +133,11 @@ namespace IntocastGasMeterApp
         
         private string XAxisLabeler(double value)
         {
-            /*Device selectedDevice = Device.Get(api.SelectedDevice);
-            int index = (int)value;
-            (DateTime time, MeasurementsRecord record) = selectedDevice.Slots.ElementAt(index);
-            if (record is null)
-            {
-                return time.ToString("HH:mm");
-            }
-            else
-            {
-                return record.Date.ToString("HH:mm");
-            }*/
-
             int measureStartHours = Int32.Parse(measureStart.Substring(0, 2));
             value += measureStartHours * 12;
             int minutes = ((int)value % 12) * 5;
             int hours = value >= 24 * 12 ? (int)(value - 24 * 12) / 12 : (int)value / 12;
             string minutesString = minutes < 10 ? "0" + minutes.ToString() : minutes.ToString();
-
 
             return hours.ToString() + ":" + minutesString;
         }

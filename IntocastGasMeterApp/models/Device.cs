@@ -207,7 +207,6 @@ namespace IntocastGasMeterApp.models
             for (DateTime time = measureStart; time < measureEnd; time = time.AddMinutes(5))
             {
                 this.Slots.Add(time, null);
-                Console.WriteLine(time);
             }
 
             StartsActive = false;
@@ -386,7 +385,6 @@ namespace IntocastGasMeterApp.models
             for (DateTime time = resetDate; time < measureEnd; time = time.AddMinutes(5))
             {
                 this.Slots.Add(time, null);
-                Console.WriteLine("Resetting device:" + time);
             }
 
             DateTime firstTimeSlot = this.Slots.Keys.ToList().First();

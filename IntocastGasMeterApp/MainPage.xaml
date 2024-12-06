@@ -19,7 +19,7 @@
             <DockPanel LastChildFill="False" Background="{StaticResource RedGradientBrush}" Opacity="0.7">
                 <DatePicker DockPanel.Dock="Left" x:Name="DatePicker" VerticalAlignment="Center" Width="150" Height="30" Padding="5" SelectedDateChanged="ChangeDateAny"></DatePicker>
                 <Button DockPanel.Dock="Left" x:Name="Button_Today" VerticalAlignment="Center" Width="75" Height="30" Padding="5" Margin="10,0,0,0" Click="ChangeDateToday">Dnes</Button>
-                <Button DockPanel.Dock="Left" Margin="10,0,0,0" Click="ToggleAlarm">Zmeň Alarm</Button>
+                <Button DockPanel.Dock="Left" x:Name="Button_StopAlarm" Margin="10,0,0,0" Click="StopAlarm">Zastaviť alarm</Button>
                 
                 <ComboBox DockPanel.Dock="Right" x:Name="ComboBox_GasMeter" VerticalAlignment="Center" Width="150" Height="30" Padding="5" SelectionChanged="DeviceSelectionChanged">
                     <ComboBoxItem Content="234610468296623"/>
@@ -104,12 +104,12 @@
                     <Label Style="{StaticResource ValueNameLabel}">Posledná požiadavka na údaje</Label>
                     <Label Style="{StaticResource ValueLabel}" x:Name="Label_LastCall" Content="{Binding LastCall}"></Label>
                     <Label Style="{StaticResource ValueNameLabel}">Aktívne zariadenie</Label>
-                    <Label Style="{StaticResource ValueLabel}" Width="auto" x:Name="Label_ActiveDevice" Content="{Binding ActiveDevice}"></Label>
+                    <Label Style="{StaticResource ValueLabel}" FontSize="16" Width="auto" x:Name="Label_ActiveDevice" Content="{Binding ActiveDevice}"></Label>
 
                     <Label Style="{StaticResource ValueNameLabel}">Status</Label>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                         <Border Style="{StaticResource Dot}" x:Name="Dot_Status" Background="{Binding StatusColor}"/>
-                        <Label Style="{StaticResource ValueLabel}" Width="auto" x:Name="Label_Status" Content="{Binding Status}"></Label>
+                        <Label Style="{StaticResource ValueLabel}" FontSize="20" Width="auto" x:Name="Label_Status" Content="{Binding Status}"></Label>
                     </StackPanel>
                     <Border x:Name="Border_StatusMessage" Visibility="{Binding Visibility, ElementName=Label_StatusMessage}" Padding="3" Width="auto" MinHeight="0" Height="auto" BorderThickness="2" CornerRadius="3" BorderBrush="{Binding StatusColor}">
                         <TextBlock x:Name="Label_StatusMessage" TextWrapping="Wrap" Text="{Binding StatusMessage}">
@@ -129,12 +129,12 @@
             <Border Grid.Column="1" Grid.Row="1" Style="{StaticResource GroupBorder}">
                 <StackPanel>
                     <Label Style="{StaticResource GroupNameLabel}">Prietok</Label>
-                    <Label Style="{StaticResource ValueNameLabel}">Okamžitý prietok (Nm³/5 min)</Label>
+                    <Label Style="{StaticResource ValueNameLabel}">Okamžitý prietok (Nm³/h)</Label>
                     <Label Style="{StaticResource ValueLabel}" x:Name="Label_Throughput" Content="{Binding ThroughputLabel}"></Label>
-                    <Label Style="{StaticResource ValueNameLabel}">Doporučený prietok (Nm³/5 min)</Label>
+                    <Label Style="{StaticResource ValueNameLabel}">Doporučený prietok (Nm³/h)</Label>
                     <Label Style="{StaticResource ValueLabel}"
 Content="{Binding Source={x:Static Properties:Settings.Default}, Path=throughput_agreed, Mode=OneWay}"></Label>
-                    <Label Style="{StaticResource ValueNameLabel}">Rozdiel (Nm³/5 min)</Label>
+                    <Label Style="{StaticResource ValueNameLabel}">Rozdiel (Nm³/h)</Label>
                     <Label Style="{StaticResource ValueLabel}" x:Name="Label_ThroughputDiff" Content="{Binding ThroughputDiffLabel}"></Label>
                 </StackPanel>
             </Border>            

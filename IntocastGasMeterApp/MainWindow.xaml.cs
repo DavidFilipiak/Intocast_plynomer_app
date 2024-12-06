@@ -284,6 +284,7 @@ namespace IntocastGasMeterApp
                 data.UpdateBarChartData(selectedDevice);
                 data.UpdateLineChartData(selectedDevice);
                 data.UpdateLabels(selectedDevice);
+                data.CheckForAlarm(selectedDevice);
             }
             catch (Exception ex)
             {

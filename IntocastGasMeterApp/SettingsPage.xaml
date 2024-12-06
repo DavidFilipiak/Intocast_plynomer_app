@@ -40,15 +40,23 @@
                         <Border Style="{StaticResource HorizontalDivider}"/>
 
                         <Label Style="{StaticResource SettingsGroupNameLabel}">Spotreba</Label>
-                        <Label>Dohodnuté maximum (24h)</Label>
-                        <TextBox Style="{StaticResource BaseInputStyle}" x:Name="TextBox_UsageAgreedMax" Text="{Binding Source={x:Static Properties:Settings.Default}, Path=usage_agreed_max, Mode=OneWay}"></TextBox>
-                        <Label>Nastavené maximum (24h)</Label>
-                        <TextBox Style="{StaticResource BaseInputStyle}" x:Name="TextBox_UsageSetMax" Text="{Binding Source={x:Static Properties:Settings.Default}, Path=usage_set_max, Mode=OneWay}"></TextBox>
+                        <Label>Dohodnuté maximum za 24h (Nm³)</Label>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                            <Border Style="{StaticResource LegendLine}" Background="Red"/>
+                            <TextBox Style="{StaticResource BaseInputStyle}" x:Name="TextBox_UsageAgreedMax" Text="{Binding Source={x:Static Properties:Settings.Default}, Path=usage_agreed_max, Mode=OneWay}"></TextBox>
+                        </StackPanel>
+                        
+                        <Label>Nastavené maximum za 24h (Nm³)</Label>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                            <Border Style="{StaticResource LegendLine}" Background="#ffd700" />
+                            <TextBox Style="{StaticResource BaseInputStyle}" x:Name="TextBox_UsageSetMax" Text="{Binding Source={x:Static Properties:Settings.Default}, Path=usage_set_max, Mode=OneWay}"></TextBox>
+                        </StackPanel>
+                       
 
                         <Border Style="{StaticResource HorizontalDivider}"/>
 
                         <Label Style="{StaticResource SettingsGroupNameLabel}">Prietok</Label>
-                        <Label>Dohodnutý prietok</Label>
+                        <Label>Dohodnutý prietok (Nm³/h)</Label>
                         <TextBox Style="{StaticResource BaseInputStyle}" x:Name="TextBox_ThroughputAgreed" Text="{Binding Source={x:Static Properties:Settings.Default}, Path=throughput_agreed, Mode=OneWay}"></TextBox>
 
                         <Border Style="{StaticResource HorizontalDivider}"/>

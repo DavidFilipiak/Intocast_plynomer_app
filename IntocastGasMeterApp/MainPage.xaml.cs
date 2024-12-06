@@ -16,6 +16,7 @@ using IntocastGasMeterApp.services;
 using IntocastGasMeterApp.models;
 using System.ComponentModel;
 using System.Security.RightsManagement;
+using System.Media;
 
 namespace IntocastGasMeterApp
 {
@@ -31,6 +32,7 @@ namespace IntocastGasMeterApp
         {
             this.api = ApiService.GetInstance();
             this.data = DataService.GetInstance();
+            data.AlarmEvent += this.ToggleAlarm;
 
             InitializeComponent();
 
@@ -50,6 +52,7 @@ namespace IntocastGasMeterApp
             Label_StatusMessage.DataContext = data;
 
             ComboBox_GasMeter.SelectedIndex = 0;
+            DatePicker.Text = data.MeasureStart.ToString("dd.MM.yyyy");
 
             barChart.SetSetLine(Properties.Settings.Default.usage_set_max);
             barChart.SetAgreedLine(Properties.Settings.Default.usage_agreed_max);
@@ -100,6 +103,7 @@ namespace IntocastGasMeterApp
                     this.data.UpdateBarChartData(selectedDevice);
                     this.data.UpdateLineChartData(selectedDevice);
                     this.data.UpdateLabels(selectedDevice);
+                    this.data.CheckForAlarm(selectedDevice);
                 }
             }
             catch (Exception ex)
@@ -111,21 +115,13 @@ namespace IntocastGasMeterApp
 
         private void ChangeDateToday(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                DateTime today = data.MeasureStart;
-                data.SetCallTimer(1000 * 60);
-                this.data.ChangeChartsToDate(today);
-            }
-            catch (Exception ex)
-            {
-                data.HandleException(ex);
-            }
-
+            DateTime today = data.MeasureStart;
+            DatePicker.SelectedDate = today;
         }
 
         private void ChangeDateAny(object sender, SelectionChangedEventArgs e)
         {
+            Console.WriteLine("ChangeDateAny");
             try
             {
                 DatePicker datePicker = sender as DatePicker;
@@ -135,17 +131,19 @@ namespace IntocastGasMeterApp
                 {
                     // Use the selected date
                     DateTime date = selectedDate.Value;
+
                     DateTime measureStart = this.data.MeasureStart;
                     date = new DateTime(date.Year, date.Month, date.Day, measureStart.Hour, measureStart.Minute, 0);
 
+                    this.data.ChangeChartsToDate(date);
                     if (date == this.data.MeasureStart)
                     {
-                        this.ChangeDateToday(sender, e);
+                        data.SetCallTimer(1000 * 60);
+                        Console.WriteLine("Start timer");
                     }
                     else
                     {
                         data.StopCallTimer();
-                        this.data.ChangeChartsToDate(date);
                         this.data.UpdateStatus("Historické údaje", "Pri prezeraní historických dát da neobnovujú aktuálne údaje.", Colors.Orange);
                     }
                 }
@@ -156,10 +154,21 @@ namespace IntocastGasMeterApp
             }
         }
 
-        private void ToggleAlarm(object sender, RoutedEventArgs e)
+        private void StopAlarm(object sender, RoutedEventArgs e)
         {
-            if (data.IsAlarmOn) data.StopAlarm();
-            else data.StartAlarm();
+            if (data.IsAlarmOn)
+            {
+                data.StopAlarm();
+                Button_StopAlarm.Visibility = Visibility.Hidden;
+            }
+        }
+
+        public void ToggleAlarm(object sender, bool alarmOn)
+        {
+            if (!alarmOn)
+            {
+                Button_StopAlarm.Visibility = Visibility.Visible;
+            }
         }
     }
 }
