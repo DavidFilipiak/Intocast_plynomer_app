@@ -198,12 +198,12 @@ namespace IntocastGasMeterApp.services
             double triggerValue = setUsage / device.Slots.Keys.Count * (index + 1);
             if (record.AccumulatedUsage > triggerValue)
             {
-                if (!IsAlarmOn && LastAlarmTrigger.AddHours(1) < now && now > MeasureStart.AddHours(1) && MeasureStart.AddHours(24) > now)
+                if (!IsAlarmOn && LastAlarmTrigger.AddHours(1) < now && now > MeasureStart.AddHours(6) && MeasureStart.AddHours(24) > now)
                 {
-                    AlarmEvent?.Invoke(this, true);
-                    LastAlarmTrigger = now;
-                    logger.LogWarning("Alarm triggered.");
                     IsAlarmOn = true;
+                    LastAlarmTrigger = now;
+                    AlarmEvent?.Invoke(this, IsAlarmOn);
+                    logger.LogWarning("Alarm triggered.");                    
                 }
             }
         }
@@ -259,7 +259,8 @@ namespace IntocastGasMeterApp.services
 
                     // start of measurement
                     MeasurementsRecord[] measurements = [];
-                    measurements = api.GetDeviceData(api.SessionId, device.DeviceNumber, now.AddMinutes(-5), now);
+                    DateTime from = device.LastDataQuery > now.AddMinutes(-5) ? now.AddMinutes(-5) : device.LastDataQuery;
+                    measurements = api.GetDeviceData(api.SessionId, device.DeviceNumber, from, now);
 
                     logger.LogInfo("Received " + measurements.Length + " records for device " + device.DeviceNumber);
 

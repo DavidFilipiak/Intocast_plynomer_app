@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using IntocastGasMeterApp.models;
 using System.ComponentModel;
 using System.DirectoryServices.ActiveDirectory;
+using System.Net.NetworkInformation;
 
 namespace IntocastGasMeterApp.services
 {
@@ -342,6 +343,34 @@ namespace IntocastGasMeterApp.services
             {
                 throw new Exception(ex.Message);
             }
+        }
+
+
+        public async Task<bool> WaitForInternetConnectionAsync(int timeoutSeconds)
+        {
+            int waited = 0;
+            while (waited < timeoutSeconds)
+            {
+                if (NetworkInterface.GetIsNetworkAvailable())
+                {
+                    try
+                    {
+                        using (HttpResponseMessage response = await new HttpClient().GetAsync("https://www.google.com"))
+                        {
+                            if (response.IsSuccessStatusCode)
+                                return true;
+                        }
+                    }
+                    catch
+                    {
+                        // Ignore exceptions during connection attempts
+                    }
+                }
+
+                await Task.Delay(1000); // Wait 1 second before retrying
+                waited++;
+            }
+            return false;
         }
     }
 }

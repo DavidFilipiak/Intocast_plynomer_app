@@ -165,7 +165,7 @@ namespace IntocastGasMeterApp
 
         public void ToggleAlarm(object sender, bool alarmOn)
         {
-            if (!alarmOn)
+            if (alarmOn)
             {
                 Button_StopAlarm.Visibility = Visibility.Visible;
             }
