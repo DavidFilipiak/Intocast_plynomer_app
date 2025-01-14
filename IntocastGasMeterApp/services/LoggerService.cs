@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -53,6 +54,8 @@ namespace IntocastGasMeterApp.services
             {
                 System.IO.File.Create(this._logPath);
             }
+
+            ClearOldLogs(this._logPath);
 
             _logQueue = new ConcurrentQueue<string>();
             _logSignal = new AutoResetEvent(false);
@@ -111,6 +114,51 @@ namespace IntocastGasMeterApp.services
         public void LogError(string message)
         {
             Log(LogFlag.ERROR, message);
+        }
+
+        private void ClearOldLogs(string filePath)
+        {
+            try
+            {
+                // Read all lines from the file
+                var lines = File.ReadAllLines(filePath);
+
+                // Get the current date minus one month
+                DateTime oneMonthAgo = DateTime.Now.AddMonths(-1);
+
+                // Filter the logs
+                var filteredLines = new List<string>();
+                foreach (var line in lines)
+                {
+                    // Extract the date from the log line
+                    string[] parts = line.Split(' ', 3, StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length < 2) continue; // Skip invalid lines
+
+                    if (DateTime.TryParseExact(parts[0], "yyyy-MM-ddTHH:mm:ss",
+                        CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime logDate))
+                    {
+                        // Include the log if it's within the last month
+                        if (logDate >= oneMonthAgo)
+                        {
+                            filteredLines.Add(line);
+                        }
+                    }
+                    else
+                    {
+                        // If the date parsing fails, you can choose to either skip or keep the log
+                        Console.WriteLine($"Invalid date format in log: {line}");
+                    }
+                }
+
+                // Write the filtered logs back to the file
+                File.WriteAllLines(filePath, filteredLines);
+
+                Console.WriteLine("Old logs cleaned successfully.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error cleaning logs: {ex.Message}");
+            }
         }
     }
 }

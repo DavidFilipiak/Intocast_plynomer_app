@@ -80,6 +80,7 @@ namespace IntocastGasMeterApp
 
                     this.loadMasterData();
                     this.loadInitialDeviceData();
+                    this.api.SelectedDevice = Device.COMBINED_DEVICE_NUMBER;
                     data.SetCallTimer(1000 * 60);
                     //this.TestLoadData();
                     navigateToMainPage();
@@ -133,7 +134,6 @@ namespace IntocastGasMeterApp
                 }
             }
             this.api.DEVICE_NUMBERS = deviceNumbers.ToArray();
-            this.api.SelectedDevice = this.api.DEVICE_NUMBERS[0];
             this.api.CUSTOMER_ID = customers[0];
 
             foreach (string deviceNumber in this.api.DEVICE_NUMBERS)

@@ -63,14 +63,24 @@ namespace IntocastGasMeterApp.models
                 newDevice.Slots[key] = combinedRecord;
             }
 
-            foreach (Device device in devices)
+            if (devices.All(device => !device.IsActive))
             {
-                if (device.IsActive)
+                newDevice.LastDataQuery = timeEnd.AddMinutes(9);
+                newDevice.LastDataUpdateSlot = timeEnd.AddMinutes(5);
+                newDevice.LastRealDataUpdate = timeEnd.AddMinutes(9);
+                newDevice.LastRealDataUpdateSlot = timeEnd.AddMinutes(5);
+            }
+            else
+            {
+                foreach (Device device in devices)
                 {
-                    newDevice.LastDataQuery = device.LastDataQuery;
-                    newDevice.LastDataUpdateSlot = device.LastDataUpdateSlot;
-                    newDevice.LastRealDataUpdate = device.LastRealDataUpdate;
-                    newDevice.LastRealDataUpdateSlot = device.LastRealDataUpdateSlot;
+                    if (device.IsActive)
+                    {
+                        newDevice.LastDataQuery = device.LastDataQuery;
+                        newDevice.LastDataUpdateSlot = device.LastDataUpdateSlot;
+                        newDevice.LastRealDataUpdate = device.LastRealDataUpdate;
+                        newDevice.LastRealDataUpdateSlot = device.LastRealDataUpdateSlot;
+                    }
                 }
             }
 

@@ -203,5 +203,25 @@ namespace UnitTests
 
             Assert.Equal([false, true, false, false, false], partials);
         }
+
+        [Fact]
+        public void CombineTwoMissingDevices()
+        {
+            Device d1 = new Device(Consts.deviceId1, Consts.customerId, Consts.measureStart);
+            d1.StartsActive = false;
+            string stream1 = Consts.GetDataStream(null, true, null);
+            MeasurementsRecord[] records1 = Utils.parseCSVMeasurements(stream1, ";");
+            d1.HandleNewRecords(Consts.measureStart.AddMinutes(5 * 5), records1);
+
+            Device d2 = new Device(Consts.deviceId2, Consts.customerId, Consts.measureStart);
+            d2.StartsActive = false;
+            string stream2 = Consts.GetDataStream(null, false, null);
+            MeasurementsRecord[] records2 = Utils.parseCSVMeasurements(stream2, ";");
+            d2.HandleNewRecords(Consts.measureStart.AddMinutes(5 * 5), records2);
+            
+            Device d = Device.Combine([d1, d2]);
+
+            Assert.False(d.IsActive);
+        }
     }
 }
