@@ -8,6 +8,7 @@
     <UseWPF>true</UseWPF>
     <BaseOutputPath></BaseOutputPath>
     <NoWin32Manifest>true</NoWin32Manifest>
+    <ApplicationIcon>app_icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -23,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="app_icon.ico" />
     <Content Include="Assets\alarm.wav">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

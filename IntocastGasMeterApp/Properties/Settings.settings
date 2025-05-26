@@ -21,7 +21,7 @@
       <Value Profile="(Default)">14500</Value>
     </Setting>
     <Setting Name="throughput_agreed" Type="System.Double" Scope="User">
-      <Value Profile="(Default)">40</Value>
+      <Value Profile="(Default)">800</Value>
     </Setting>
     <Setting Name="sessionId" Type="System.String" Scope="User">
       <Value Profile="(Default)" />

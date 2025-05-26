@@ -85,6 +85,8 @@ namespace IntocastGasMeterApp
 
         public void ToMainPage(object sender, RoutedEventArgs e)
         {
+            this.Save(sender, e);
+
             this.api.AuthResultEvent -= this.onLoginResult;
             ((MainWindow)Application.Current.MainWindow).navigateToMainPage();
         }

@@ -161,7 +161,7 @@ namespace IntocastGasMeterApp
                 {
                     if (device.IsActive)
                     {
-                        data.UpdateStatus("Chýbajúce dáta", "Za posledných 10 minút neprišli žiadne nové dáta. Zobrazené údaje nemusia byť aktuálne.", Colors.Orange);
+                        data.UpdateStatus("Chýbajúce dáta", "Za posledných 5 minút neprišli žiadne nové dáta. Zobrazené údaje nemusia byť aktuálne.", Colors.Orange);
                     }
                 }
                 else
@@ -214,7 +214,7 @@ namespace IntocastGasMeterApp
                 {
                     if (device.IsActive)
                     {
-                        data.UpdateStatus("Chýbajúce dáta", "Za posledných 10 minút neprišli žiadne nové dáta. Zobrazené údaje nemusia byť aktuálne.", Colors.Orange);
+                        data.UpdateStatus("Chýbajúce dáta", "Za posledných 5 minút neprišli žiadne nové dáta. Zobrazené údaje nemusia byť aktuálne.", Colors.Orange);
                     }
                 }
                 else
@@ -264,7 +264,7 @@ namespace IntocastGasMeterApp
                     {
                         if (device.IsActive)
                         {
-                            data.UpdateStatus("Chýbajúce dáta", "Za posledných 10 minút neprišli žiadne nové dáta. Zobrazené údaje nemusia byť aktuálne.", Colors.Orange);
+                            data.UpdateStatus("Chýbajúce dáta", "Za posledných 5 minút neprišli žiadne nové dáta. Zobrazené údaje nemusia byť aktuálne.", Colors.Orange);
                         }
                     }
                     else

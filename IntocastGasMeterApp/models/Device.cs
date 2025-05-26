@@ -158,14 +158,14 @@ namespace IntocastGasMeterApp.models
                 int i = 0;
                 foreach ((DateTime key, MeasurementsRecord record) in Slots)
                 {
-                    if (record == null)
+                    if (record is null)
                     {
                         list.Add(null);
                         continue;
                     }
                     MeasurementsRecord previous = null;
                     Slots.TryGetValue(key.AddMinutes(-5), out previous);
-                    if (i > 0 && (previous == null || previous.IsPartial))
+                    if (i > 0 && (previous is null || previous.IsPartial))
                     {
                         list.Add(null);
                     }

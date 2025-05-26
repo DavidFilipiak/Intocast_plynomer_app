@@ -115,19 +115,26 @@ namespace IntocastGasMeterApp.services
             return username == savedUsername && password == savedPassword;
         }
 
+        public void ResetApiConnection()
+        {
+            string username = Utils.Decrypt(Properties.Settings.Default.username);
+            string password = Utils.Decrypt(Properties.Settings.Default.password);
+            this.Login(username, password, true, false, false);
+        }
+
         public void Login(bool saveSession)
         {
             string username = Utils.Decrypt(Properties.Settings.Default.username);
             string password = Utils.Decrypt(Properties.Settings.Default.password);
-            this.Login(username, password, true, saveSession);
+            this.Login(username, password, true, saveSession, true);
         }
 
         public void Login(string username, string password, bool isMain)
         {
-            this.Login(username, password, isMain, isMain);
+            this.Login(username, password, isMain, isMain, true);
         }
 
-        public void Login(string username, string password, bool isMain, bool saveSession)
+        public void Login(string username, string password, bool isMain, bool saveSession, bool invokeEvent)
         {
             try
             {
@@ -138,11 +145,11 @@ namespace IntocastGasMeterApp.services
                     bool loginCheck = this.CheckLogin(username, password);
                     if (loginCheck)
                     {
-                        AuthResultEvent?.Invoke(this, LoginStatus.LOGIN_CHECK_SUCCESS);
+                        if (invokeEvent) AuthResultEvent?.Invoke(this, LoginStatus.LOGIN_CHECK_SUCCESS);
                     }
                     else
                     {
-                        AuthResultEvent?.Invoke(this, LoginStatus.LOGIN_FAILURE);
+                        if (invokeEvent) AuthResultEvent?.Invoke(this, LoginStatus.LOGIN_FAILURE);
                         throw new BadLoginException("Nesprávne meno alebo heslo.");
                     }
 
@@ -154,8 +161,8 @@ namespace IntocastGasMeterApp.services
                 string queryString = BuildQueryString(
                     new Dictionary<string, string>
                     {
-                    { "name", username },
-                    { "password", password }
+                        { "name", username },
+                        { "password", password }
                     },
                     true
                 );
@@ -177,7 +184,7 @@ namespace IntocastGasMeterApp.services
                         Properties.Settings.Default.Save();
                     }
 
-                    AuthResultEvent?.Invoke(this, LoginStatus.LOGIN_SUCCESS);
+                    if (invokeEvent) AuthResultEvent?.Invoke(this, LoginStatus.LOGIN_SUCCESS);
                 }
                 else
                 {
@@ -186,7 +193,7 @@ namespace IntocastGasMeterApp.services
                     Console.WriteLine(responseString);
                     dynamic? errorData = JsonConvert.DeserializeObject(responseString);
 
-                    AuthResultEvent?.Invoke(this, LoginStatus.LOGIN_FAILURE);
+                    if (invokeEvent) AuthResultEvent?.Invoke(this, LoginStatus.LOGIN_FAILURE);
                     throw new BadLoginException(errorData?.message.ToString());
                 }
             }
@@ -344,7 +351,6 @@ namespace IntocastGasMeterApp.services
                 throw new Exception(ex.Message);
             }
         }
-
 
         public async Task<bool> WaitForInternetConnectionAsync(int timeoutSeconds)
         {

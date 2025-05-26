@@ -10,22 +10,25 @@
       Title="MainPage" Background="{StaticResource BackgroundColorBrush}">
 
     <DockPanel Margin="0">
-        <Menu DockPanel.Dock="Top">
-            <MenuItem Header="Nastavenia" Click="ToSettings"></MenuItem>
-            <MenuItem Header="Odhlásiť" Click="Logout"></MenuItem>
-        </Menu>
+        <Border DockPanel.Dock="Top" BorderThickness="0,0,0,5" BorderBrush="{StaticResource RedGradientBrush}">
+            <DockPanel LastChildFill="False" Background="{StaticResource PrimaryColorLight}" Opacity="1">
+                <Button DockPanel.Dock="Left" x:Name="Button_Settings" Style="{StaticResource MainPageButton}" VerticalAlignment="Center" Width="75" Height="30" Padding="5" Margin="10,0,0,0" Click="ToSettings">Nastavenia</Button>
+                <Button DockPanel.Dock="Left" x:Name="Button_Logout" Style="{StaticResource MainPageButton}" VerticalAlignment="Center" Width="75" Height="30" Padding="5" Margin="10,0,0,0" Click="Logout">Odhlásiť</Button>
 
-        <Border DockPanel.Dock="Top" BorderThickness="0,0,0,5" BorderBrush="{StaticResource PrimaryColorBrush}">
-            <DockPanel LastChildFill="False" Background="{StaticResource RedGradientBrush}" Opacity="0.7">
-                <DatePicker DockPanel.Dock="Left" x:Name="DatePicker" VerticalAlignment="Center" Width="150" Height="30" Padding="5" SelectedDateChanged="ChangeDateAny"></DatePicker>
-                <Button DockPanel.Dock="Left" x:Name="Button_Today" VerticalAlignment="Center" Width="75" Height="30" Padding="5" Margin="10,0,0,0" Click="ChangeDateToday">Dnes</Button>
-                <Button DockPanel.Dock="Left" x:Name="Button_StopAlarm" Margin="10,0,0,0" Click="StopAlarm" Visibility="Hidden">Zastaviť alarm</Button>
+                <StackPanel Orientation="Vertical" DockPanel.Dock="Right">
+                    <Label Content="Zvolené zariadenie" Margin="70,0,0,-25" Padding="0" Panel.ZIndex="999" FontSize="8" Height="10" Width="70" />
+                    <ComboBox  Style="{StaticResource MainPageComboBox}" x:Name="ComboBox_GasMeter" VerticalAlignment="Center" Width="150" Height="30" Padding="5" Margin="5,5,10,5" SelectionChanged="DeviceSelectionChanged">
+                        <ComboBoxItem Content="234610468296623"/>
+                        <ComboBoxItem Content="244610152396624"/>
+                        <ComboBoxItem Content="Spolu"/>
+                    </ComboBox>
+                </StackPanel>
                 
-                <ComboBox DockPanel.Dock="Right" x:Name="ComboBox_GasMeter" VerticalAlignment="Center" Width="150" Height="30" Padding="5" SelectionChanged="DeviceSelectionChanged">
-                    <ComboBoxItem Content="234610468296623"/>
-                    <ComboBoxItem Content="244610152396624"/>
-                    <ComboBoxItem Content="Spolu"/>
-                </ComboBox>
+                <DatePicker DockPanel.Dock="Right" x:Name="DatePicker" FontWeight="DemiBold" VerticalAlignment="Center" Width="150" Height="30" Padding="5" Margin="5" SelectedDateChanged="ChangeDateAny" Text="Vyberte dátum"></DatePicker>
+                <Button DockPanel.Dock="Right" x:Name="Button_Today" Style="{StaticResource MainPageButton}" VerticalAlignment="Center" Width="75" Height="30" Padding="5" Margin="10,0,0,0" Click="ChangeDateToday">Dnes</Button>
+                <Button DockPanel.Dock="Right" x:Name="Button_StopAlarm" Style="{StaticResource MainPageButton}" Margin="10,0,0,0" Click="StopAlarm" Visibility="Hidden">Zastaviť alarm</Button>
+
+                
             </DockPanel>
         </Border>
 

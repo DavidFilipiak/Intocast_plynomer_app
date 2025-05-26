@@ -48,7 +48,7 @@ namespace IntocastGasMeterApp
                 if (isConnected)
                 {
                     Console.WriteLine("Internet connected. Making API request...");
-                    OnApplicationResumed();
+                    OnApplicationResumed(true);
                 }
                 else
                 {
@@ -66,7 +66,7 @@ namespace IntocastGasMeterApp
             }
         }
 
-        private void OnApplicationResumed()
+        private void OnApplicationResumed(bool retry)
         {
             try
             {
@@ -117,18 +117,27 @@ namespace IntocastGasMeterApp
                 data.UpdateBarChartData(selectedDevice);
                 data.UpdateLineChartData(selectedDevice);
                 data.UpdateLabels(selectedDevice);
-                data.CheckForAlarm(selectedDevice);                
+                data.CheckForAlarm(selectedDevice);
+
+                // restart the timer
+                data.SetCallTimer(1000 * 60); // every minute
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                data.HandleException(ex);
-                //data.UpdateStatus("Chyba", "Kontaktuje developera s touto chybou: " + ex.Message, Colors.Crimson);
-            }
-            finally
-            {
-                // restart the timer
-                data.SetCallTimer(1000 * 60); // every minute
+                if (retry)
+                {
+                    this.api.ResetApiConnection();
+                    OnApplicationResumed(false);
+                }
+                else
+                {
+                    Console.WriteLine(ex.Message);
+                    data.HandleException(ex);
+                    //data.UpdateStatus("Chyba", "Kontaktuje developera s touto chybou: " + ex.Message, Colors.Crimson);
+
+                    // restart the timer
+                    data.SetCallTimer(1000 * 60); // every minute
+                }
             }
         }
     }

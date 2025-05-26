@@ -51,6 +51,7 @@ namespace IntocastGasMeterApp
             Border_StatusMessage.DataContext = data;
             Label_StatusMessage.DataContext = data;
 
+            ComboBox_GasMeter.SelectedIndex = 0;
             ComboBox_GasMeter.SelectedIndex = 2;
             DatePicker.Text = data.MeasureStart.ToString("dd.MM.yyyy");
 

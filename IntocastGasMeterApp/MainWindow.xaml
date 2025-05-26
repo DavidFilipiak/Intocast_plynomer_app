@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:IntocastGasMeterApp"
         xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
         mc:Ignorable="d"
-        Title="MainWindow"
+        Title="Intocast Plynový Monitor"
         Closed="MainWindow_Closed"
         Height="600" 
         Width="1000"        
