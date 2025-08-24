@@ -5,6 +5,7 @@ using System.Configuration;
 using System.Data;
 using System.Windows;
 using System.Windows.Media;
+using Velopack;
 
 namespace IntocastGasMeterApp
 {
@@ -13,6 +14,17 @@ namespace IntocastGasMeterApp
     /// </summary>
     public partial class App : Application
     {
+
+        [STAThread]
+        private static void Main(string[] args)
+        {
+            // Let Velopack run install/update/uninstall tasks when needed
+            VelopackApp.Build().Run();
+            App app = new();
+            app.InitializeComponent();
+            app.Run();
+        }
+
         private ApiService api;
         private DataService data;
         private LoggerService logger;
@@ -24,9 +36,19 @@ namespace IntocastGasMeterApp
             this.logger = LoggerService.GetInstance();
         }
 
-        protected override void OnStartup(StartupEventArgs e)
+        protected override async void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+
+            try
+            {
+                await UpdateService.CheckForUpdatesAsync();
+            }
+            catch (Velopack.Exceptions.NotInstalledException)
+            {
+                // We're running from VS (debug) or not installed – just skip update check
+                Console.WriteLine("App not installed, running from VS. Skipping update check.");
+            }
 
             // Subscribe to power mode changes
             SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;

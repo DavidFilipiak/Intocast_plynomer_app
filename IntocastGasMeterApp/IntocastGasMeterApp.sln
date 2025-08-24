@@ -7,8 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntocastGasMeterApp", "Into
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "..\UnitTests\UnitTests.csproj", "{650786FE-4D96-4057-AB69-262010D9D3CD}"
 EndProject
-Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "SetupProject1", "..\SetupProject1\SetupProject1.wixproj", "{4BC32FA6-4C30-4E8E-9808-4F1C4812B079}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,14 +31,6 @@ Global
 		{650786FE-4D96-4057-AB69-262010D9D3CD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{650786FE-4D96-4057-AB69-262010D9D3CD}.Release|x86.ActiveCfg = Release|Any CPU
 		{650786FE-4D96-4057-AB69-262010D9D3CD}.Release|x86.Build.0 = Release|Any CPU
-		{4BC32FA6-4C30-4E8E-9808-4F1C4812B079}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{4BC32FA6-4C30-4E8E-9808-4F1C4812B079}.Debug|Any CPU.Build.0 = Debug|x86
-		{4BC32FA6-4C30-4E8E-9808-4F1C4812B079}.Debug|x86.ActiveCfg = Debug|x86
-		{4BC32FA6-4C30-4E8E-9808-4F1C4812B079}.Debug|x86.Build.0 = Debug|x86
-		{4BC32FA6-4C30-4E8E-9808-4F1C4812B079}.Release|Any CPU.ActiveCfg = Release|x86
-		{4BC32FA6-4C30-4E8E-9808-4F1C4812B079}.Release|Any CPU.Build.0 = Release|x86
-		{4BC32FA6-4C30-4E8E-9808-4F1C4812B079}.Release|x86.ActiveCfg = Release|x86
-		{4BC32FA6-4C30-4E8E-9808-4F1C4812B079}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

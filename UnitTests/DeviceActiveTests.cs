@@ -348,6 +348,7 @@ namespace UnitTests
             Assert.Equal([true, false, false, true, true], fromActiveDevice);
         }
 
+        [Fact]
         public void WorkingMeasurementsTwiceSwitchSecondSwitchMissing()
         {
             Device d = new Device(Consts.customerId, Consts.deviceId1, Consts.measureStart);
