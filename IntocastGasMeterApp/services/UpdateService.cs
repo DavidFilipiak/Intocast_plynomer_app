@@ -16,7 +16,7 @@ namespace IntocastGasMeterApp.services
         {
             // Use your GitHub owner & repo here
             //var source = new GithubSource("your-github-username", "your-repo", prerelease: false);
-            var mgr = new UpdateManager("https://github.com/DavidFilipiak/Intocast_plynomer_app/releases/latest/download/");
+            var mgr = new UpdateManager("https://pub-3669bb5d525c491baf9ebceff1857194.r2.dev/");
 
             var update = await mgr.CheckForUpdatesAsync();
             Console.WriteLine("Checked for updates.");
