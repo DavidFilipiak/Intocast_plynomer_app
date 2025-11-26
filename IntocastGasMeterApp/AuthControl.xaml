@@ -8,6 +8,7 @@
 
     <Border Style="{StaticResource GroupBorder}" Padding="40" Width="300" Height="Auto">
         <StackPanel>
+            <Label Margin="20" HorizontalAlignment="Center" FontWeight="Bold" FontSize="20">VITAJTE</Label>
             <Label>Použivateľské meno</Label>
             <TextBox x:Name="TextBox_username" Style="{StaticResource LoginTextBoxStyle}"></TextBox>
             <Label Margin="0,5,0,0">Heslo</Label>
