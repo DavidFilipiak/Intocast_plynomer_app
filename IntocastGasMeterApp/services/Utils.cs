@@ -64,9 +64,11 @@ namespace IntocastGasMeterApp.services
                     double.Parse(values[2], CultureInfo.InvariantCulture),
                     double.Parse(values[3], CultureInfo.InvariantCulture),
                     double.Parse(values[4], CultureInfo.InvariantCulture),
-                    double.Parse(values[5], CultureInfo.InvariantCulture),
-                    double.Parse(values[6], CultureInfo.InvariantCulture),
-                    values[7]
+                    //"Prep. poč. arch.1h (Nm^3)",
+                    //"Dátum archívu_1h",
+                    double.Parse(values[7], CultureInfo.InvariantCulture),
+                    double.Parse(values[8], CultureInfo.InvariantCulture),
+                    values[9]
                 );
 
                 records.Add(record);

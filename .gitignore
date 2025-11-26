@@ -178,6 +178,12 @@ DocProject/Help/html
 
 # Click-Once directory
 publish/
+bin/
+Releases/
+obj/
+*.csproj.user
+*.pfx
+
 
 # Publish Web Output
 *.[Pp]ublish.xml

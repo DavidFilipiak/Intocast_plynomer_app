@@ -16,8 +16,10 @@ namespace IntocastGasMeterApp.models
             "Vb_act (Nm^3)",
             "Abs. tlak_act (kPa)",
             "Teplota_act (°C)",
-            "Neprep. poč. arch. (m^3)",
-            "Prep. poč. arch. (Nm^3)",
+            "Prep. poč. arch.1h (Nm^3)",
+            "Dátum archívu_1h",
+            "Neprep. poč. arch.24h (m^3)",
+            "Prep. poč. arch.24h (Nm^3)",
             "Dátum archívu"
         };
 
